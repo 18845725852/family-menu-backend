@@ -10,6 +10,7 @@ import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,6 +37,11 @@ public class DishController {
     @PostMapping
     public ApiResponse<DishResponse> create(@Valid @RequestBody CreateDishRequest request) {
         return ApiResponse.success(DishResponse.from(dishService.create(request)));
+    }
+
+    @PutMapping("/{id}")
+    public ApiResponse<DishResponse> update(@PathVariable Long id, @Valid @RequestBody CreateDishRequest request) {
+        return ApiResponse.success(DishResponse.from(dishService.update(id, request)));
     }
 
     @PatchMapping("/{id}/availability")

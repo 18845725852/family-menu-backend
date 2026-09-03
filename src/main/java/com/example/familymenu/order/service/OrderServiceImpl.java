@@ -5,7 +5,6 @@ import com.example.familymenu.dish.domain.Dish;
 import com.example.familymenu.dish.repository.DishRepository;
 import com.example.familymenu.order.domain.Order;
 import com.example.familymenu.order.domain.OrderItem;
-import com.example.familymenu.order.domain.OrderStatus;
 import com.example.familymenu.order.dto.CreateOrderRequest;
 import com.example.familymenu.order.dto.OrderItemRequest;
 import com.example.familymenu.order.repository.OrderRepository;
@@ -32,30 +31,20 @@ public class OrderServiceImpl implements OrderService {
                     .orElseThrow(() -> new BusinessException("菜品不可用: " + itemRequest.getDishId()));
             items.add(new OrderItem(dish.getId(), dish.getName(), itemRequest.getQuantity(), itemRequest.getRemark()));
         }
-        Order order = new Order(null, request.getCustomerName(), items, request.getRemark(), OrderStatus.PENDING,
+        Order order = new Order(null, request.getCustomerName(), items, request.getRemark(),
                 LocalDateTime.now());
         return orderRepository.save(order);
     }
 
     @Override
-    public List<Order> list(OrderStatus status) {
-        return orderRepository.findAll(status);
+    public List<Order> list() {
+        return orderRepository.findAll();
     }
 
     @Override
-    public Order updateStatus(Long id, OrderStatus status) {
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new BusinessException("订单不存在: " + id));
-        validateStatusTransition(order.getStatus(), status);
-        return orderRepository.save(order.withStatus(status));
-    }
-
-    private void validateStatusTransition(OrderStatus current, OrderStatus next) {
-        if (current == OrderStatus.COMPLETED || current == OrderStatus.CANCELLED) {
-            throw new BusinessException("订单已结束，不能修改状态");
-        }
-        if (current == OrderStatus.PENDING && next == OrderStatus.COMPLETED) {
-            throw new BusinessException("订单需要先进入制作中");
+    public void delete(Long id) {
+        if (!orderRepository.deleteById(id)) {
+            throw new BusinessException("订单不存在: " + id);
         }
     }
 }

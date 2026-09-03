@@ -2,7 +2,6 @@ CREATE TABLE IF NOT EXISTS dishes (
     id BIGINT NOT NULL AUTO_INCREMENT,
     name VARCHAR(50) NOT NULL,
     category VARCHAR(50) NOT NULL,
-    description VARCHAR(200),
     image_url VARCHAR(500),
     available BOOLEAN NOT NULL DEFAULT TRUE,
     sort INT NOT NULL DEFAULT 0,
@@ -14,10 +13,8 @@ CREATE TABLE IF NOT EXISTS orders (
     id BIGINT NOT NULL AUTO_INCREMENT,
     customer_name VARCHAR(30) NOT NULL,
     remark VARCHAR(200),
-    status VARCHAR(20) NOT NULL,
     created_at TIMESTAMP NOT NULL,
-    PRIMARY KEY (id),
-    KEY idx_orders_status_created (status, created_at)
+    PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS order_items (

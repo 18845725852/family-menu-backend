@@ -2,7 +2,6 @@ package com.example.familymenu.order.repository;
 
 import com.example.familymenu.order.domain.Order;
 import com.example.familymenu.order.domain.OrderItem;
-import com.example.familymenu.order.domain.OrderStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -36,12 +35,11 @@ public class JdbcOrderRepository implements OrderRepository {
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
                 PreparedStatement statement = connection.prepareStatement(
-                        "INSERT INTO orders (customer_name, remark, status, created_at) VALUES (?, ?, ?, ?)",
+                        "INSERT INTO orders (customer_name, remark, created_at) VALUES (?, ?, ?)",
                         Statement.RETURN_GENERATED_KEYS);
                 statement.setString(1, order.getCustomerName());
                 statement.setString(2, order.getRemark());
-                statement.setString(3, order.getStatus().name());
-                statement.setTimestamp(4, Timestamp.valueOf(order.getCreatedAt()));
+                statement.setTimestamp(3, Timestamp.valueOf(order.getCreatedAt()));
                 return statement;
             }, keyHolder);
             orderId = keyHolder.getKey().longValue();
@@ -51,30 +49,28 @@ public class JdbcOrderRepository implements OrderRepository {
                         item.getQuantity(), item.getRemark());
             }
         } else {
-            jdbcTemplate.update("UPDATE orders SET status = ? WHERE id = ?", order.getStatus().name(), orderId);
         }
         return new Order(orderId, order.getCustomerName(), Collections.unmodifiableList(
-                new ArrayList<OrderItem>(order.getItems())), order.getRemark(), order.getStatus(), order.getCreatedAt());
+                new ArrayList<OrderItem>(order.getItems())), order.getRemark(), order.getCreatedAt());
     }
 
     @Override
     public Optional<Order> findById(Long id) {
-        List<Order> orders = jdbcTemplate.query("SELECT id, customer_name, remark, status, created_at "
+        List<Order> orders = jdbcTemplate.query("SELECT id, customer_name, remark, created_at "
                         + "FROM orders WHERE id = ?", new Object[]{id}, (rs, rowNum) -> mapOrder(rs));
         return orders.isEmpty() ? Optional.<Order>empty() : Optional.of(withItems(orders.get(0)));
     }
 
     @Override
-    public List<Order> findAll(OrderStatus status) {
-        String sql = "SELECT id, customer_name, remark, status, created_at FROM orders";
-        List<Order> orders;
-        if (status == null) {
-            sql += " ORDER BY created_at DESC, id DESC";
-            orders = jdbcTemplate.query(sql, (rs, rowNum) -> mapOrder(rs));
-        } else {
-            sql += " WHERE status = ? ORDER BY created_at DESC, id DESC";
-            orders = jdbcTemplate.query(sql, new Object[]{status.name()}, (rs, rowNum) -> mapOrder(rs));
-        }
+    @Transactional
+    public boolean deleteById(Long id) {
+        return jdbcTemplate.update("DELETE FROM orders WHERE id = ?", id) > 0;
+    }
+
+    @Override
+    public List<Order> findAll() {
+        List<Order> orders = jdbcTemplate.query("SELECT id, customer_name, remark, created_at FROM orders "
+                + "ORDER BY created_at DESC, id DESC", (rs, rowNum) -> mapOrder(rs));
         List<Order> result = new ArrayList<Order>(orders.size());
         for (Order order : orders) {
             result.add(withItems(order));
@@ -84,8 +80,7 @@ public class JdbcOrderRepository implements OrderRepository {
 
     private Order mapOrder(java.sql.ResultSet rs) throws java.sql.SQLException {
         return new Order(rs.getLong("id"), rs.getString("customer_name"), Collections.<OrderItem>emptyList(),
-                rs.getString("remark"), OrderStatus.valueOf(rs.getString("status")),
-                rs.getTimestamp("created_at").toLocalDateTime());
+                rs.getString("remark"), rs.getTimestamp("created_at").toLocalDateTime());
     }
 
     private Order withItems(Order order) {
@@ -93,7 +88,7 @@ public class JdbcOrderRepository implements OrderRepository {
                         + "WHERE order_id = ? ORDER BY id ASC", new Object[]{order.getId()}, (rs, rowNum) ->
                 new OrderItem(rs.getLong("dish_id"), rs.getString("dish_name"), rs.getInt("quantity"),
                         rs.getString("remark")));
-        return new Order(order.getId(), order.getCustomerName(), items, order.getRemark(), order.getStatus(),
+        return new Order(order.getId(), order.getCustomerName(), items, order.getRemark(),
                 order.getCreatedAt());
     }
 }

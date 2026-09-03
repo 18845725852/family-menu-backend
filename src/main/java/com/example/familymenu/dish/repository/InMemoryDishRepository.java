@@ -20,8 +20,8 @@ public class InMemoryDishRepository implements DishRepository {
     private final AtomicLong idGenerator = new AtomicLong(2);
 
     public InMemoryDishRepository() {
-        save(new Dish(1L, "番茄炒蛋", "家常菜", "酸甜开胃，适合全家", null, true, 1));
-        save(new Dish(2L, "紫菜蛋花汤", "汤", "十分钟快手汤", null, true, 2));
+        save(new Dish(1L, "番茄炒蛋", "家常菜", null, true, 1));
+        save(new Dish(2L, "紫菜蛋花汤", "汤", null, true, 2));
     }
 
     @Override
@@ -41,7 +41,7 @@ public class InMemoryDishRepository implements DishRepository {
     @Override
     public Dish save(Dish dish) {
         Long id = dish.getId() == null ? idGenerator.incrementAndGet() : dish.getId();
-        Dish saved = new Dish(id, dish.getName(), dish.getCategory(), dish.getDescription(), dish.getImageUrl(),
+        Dish saved = new Dish(id, dish.getName(), dish.getCategory(), dish.getImageUrl(),
                 dish.isAvailable(), dish.getSort());
         dishes.put(id, saved);
         return saved;

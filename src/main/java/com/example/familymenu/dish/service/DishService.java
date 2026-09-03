@@ -11,5 +11,7 @@ public interface DishService {
 
     Dish create(CreateDishRequest request);
 
+    Dish update(Long id, CreateDishRequest request);
+
     Dish updateAvailability(Long id, boolean available);
 }

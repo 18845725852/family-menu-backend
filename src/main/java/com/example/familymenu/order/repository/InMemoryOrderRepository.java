@@ -2,7 +2,6 @@ package com.example.familymenu.order.repository;
 
 import com.example.familymenu.order.domain.Order;
 import com.example.familymenu.order.domain.OrderItem;
-import com.example.familymenu.order.domain.OrderStatus;
 import org.springframework.stereotype.Repository;
 import org.springframework.context.annotation.Profile;
 
@@ -26,7 +25,7 @@ public class InMemoryOrderRepository implements OrderRepository {
         Long id = order.getId() == null ? idGenerator.incrementAndGet() : order.getId();
         Order saved = new Order(id, order.getCustomerName(),
                 java.util.Collections.unmodifiableList(new java.util.ArrayList<OrderItem>(order.getItems())),
-                order.getRemark(), order.getStatus(), order.getCreatedAt());
+                order.getRemark(), order.getCreatedAt());
         orders.put(id, saved);
         return saved;
     }
@@ -37,9 +36,13 @@ public class InMemoryOrderRepository implements OrderRepository {
     }
 
     @Override
-    public List<Order> findAll(OrderStatus status) {
+    public boolean deleteById(Long id) {
+        return orders.remove(id) != null;
+    }
+
+    @Override
+    public List<Order> findAll() {
         return orders.values().stream()
-                .filter(order -> status == null || order.getStatus() == status)
                 .sorted(Comparator.comparing(Order::getCreatedAt).reversed())
                 .collect(Collectors.toList());
     }

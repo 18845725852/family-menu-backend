@@ -10,8 +10,6 @@ public class CreateDishRequest {
     private String name;
     @NotBlank(message = "分类不能为空")
     private String category;
-    @Size(max = 200, message = "描述不能超过200个字")
-    private String description;
     private String imageUrl;
     private Integer sort;
 
@@ -22,8 +20,6 @@ public class CreateDishRequest {
     public void setName(String name) { this.name = name; }
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public Integer getSort() { return sort; }

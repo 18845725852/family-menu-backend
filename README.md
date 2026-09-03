@@ -2,7 +2,7 @@
 
 这是一个独立的 Spring Boot 单体后端，面向家庭版微信点菜小程序的第一版核心流程：
 
-> 查看可供应菜品 -> 家人提交订单 -> 厨房查看订单 -> 更新制作状态
+> 查看可供应菜品 -> 家人提交订单 -> 查看历史订单
 
 ## 技术栈
 
@@ -44,6 +44,8 @@ mvn spring-boot:run
 export MYSQL_URL='jdbc:mysql://127.0.0.1:3306/family_menu?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true'
 ```
 
+如果 `orders` 表是在移除订单状态之前创建的，请在 `family_menu` 库中一次性执行 `migration-no-order-status.sql`，删除旧的 `status` 字段后再启动应用。
+
 如果暂时没有可用 MySQL，可使用内存模式回归接口（数据重启后清空）：
 
 ```bash
@@ -52,7 +54,7 @@ mvn spring-boot:run -Dspring-boot.run.profiles=memory
 
 ## 接口
 
-启动后访问 `http://localhost:8081/` 可打开临时测试台，用于查看菜单、加入点菜篮、提交订单和更新订单状态。若服务在页面加入前已经启动，需要重启服务才能加载该页面。
+启动后访问 `http://localhost:8081/` 可打开临时测试台，用于查看菜单、加入点菜篮、提交订单和查看历史订单。若服务在页面加入前已经启动，需要重启服务才能加载该页面。
 
 ### 查询可用菜品
 
@@ -69,8 +71,20 @@ Content-Type: application/json
 {
   "name": "清炒西兰花",
   "category": "素菜",
-  "description": "少油少盐",
   "sort": 3
+}
+```
+
+### 编辑菜品（暂未做管理员鉴权）
+
+```http
+PUT /api/dishes/1
+Content-Type: application/json
+
+{
+  "name": "番茄炒蛋（家常）",
+  "category": "家常菜",
+  "sort": 1
 }
 ```
 
@@ -103,21 +117,10 @@ Content-Type: application/json
 
 ```http
 GET /api/orders
-GET /api/orders?status=PENDING
-```
-
-### 更新订单状态
-
-状态值：`PENDING`、`COOKING`、`COMPLETED`、`CANCELLED`。
-
-```http
-PATCH /api/orders/1/status
-Content-Type: application/json
-
-{"status": "COOKING"}
+GET /api/orders
 ```
 
 ## 下一步接入微信
 
 1. 增加微信 `code2session` Gateway，以 `openid` 替换 `customerName` 的人工填写。
-2. 增加家庭空间和成员表，再给“新增菜品”和“更新订单状态”接口加管理员权限。
+2. 增加家庭空间和成员表，再给“新增菜品”接口加管理员权限。
