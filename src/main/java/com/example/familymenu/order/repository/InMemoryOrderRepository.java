@@ -41,6 +41,12 @@ public class InMemoryOrderRepository implements OrderRepository {
     }
 
     @Override
+    public long countItemsByDishId(Long dishId) {
+        return orders.values().stream().flatMap(order -> order.getItems().stream())
+                .filter(item -> item.getDishId().equals(dishId)).count();
+    }
+
+    @Override
     public List<Order> findAll() {
         return orders.values().stream()
                 .sorted(Comparator.comparing(Order::getCreatedAt).reversed())

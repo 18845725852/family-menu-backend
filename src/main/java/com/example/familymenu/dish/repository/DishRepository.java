@@ -12,4 +12,8 @@ public interface DishRepository {
     Optional<Dish> findById(Long id);
 
     Dish save(Dish dish);
+
+    boolean deleteById(Long id);
+
+    boolean existsByNameAndCategory(String name, String category, Long excludeId);
 }

@@ -11,5 +11,7 @@ public interface OrderService {
 
     List<Order> list();
 
+    Order detail(Long id);
+
     void delete(Long id);
 }

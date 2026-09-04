@@ -13,5 +13,7 @@ public interface OrderRepository {
 
     boolean deleteById(Long id);
 
+    long countItemsByDishId(Long dishId);
+
     List<Order> findAll();
 }

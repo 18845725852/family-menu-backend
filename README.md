@@ -97,6 +97,12 @@ Content-Type: application/json
 {"available": false}
 ```
 
+### 删除菜品
+
+```http
+DELETE /api/dishes/1
+```
+
 ### 提交点菜订单
 
 ```http
@@ -118,6 +124,18 @@ Content-Type: application/json
 ```http
 GET /api/orders
 GET /api/orders
+```
+
+### 查询订单详情
+
+```http
+GET /api/orders/1
+```
+
+### 删除订单
+
+```http
+DELETE /api/orders/1
 ```
 
 ## 下一步接入微信

@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -48,5 +49,11 @@ public class DishController {
     public ApiResponse<DishResponse> updateAvailability(@PathVariable Long id,
                                                          @Valid @RequestBody UpdateDishAvailabilityRequest request) {
         return ApiResponse.success(DishResponse.from(dishService.updateAvailability(id, request.getAvailable())));
+    }
+
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> delete(@PathVariable Long id) {
+        dishService.delete(id);
+        return ApiResponse.success(null);
     }
 }

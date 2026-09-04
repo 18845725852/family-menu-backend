@@ -68,6 +68,13 @@ public class JdbcOrderRepository implements OrderRepository {
     }
 
     @Override
+    public long countItemsByDishId(Long dishId) {
+        Long count = jdbcTemplate.queryForObject("SELECT COUNT(1) FROM order_items WHERE dish_id = ?",
+                Long.class, dishId);
+        return count == null ? 0L : count;
+    }
+
+    @Override
     public List<Order> findAll() {
         List<Order> orders = jdbcTemplate.query("SELECT id, customer_name, remark, created_at FROM orders "
                 + "ORDER BY created_at DESC, id DESC", (rs, rowNum) -> mapOrder(rs));

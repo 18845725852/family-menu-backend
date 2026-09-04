@@ -36,6 +36,11 @@ public class OrderController {
                 .collect(Collectors.toList()));
     }
 
+    @GetMapping("/{id}")
+    public ApiResponse<OrderResponse> detail(@PathVariable Long id) {
+        return ApiResponse.success(OrderResponse.from(orderService.detail(id)));
+    }
+
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         orderService.delete(id);

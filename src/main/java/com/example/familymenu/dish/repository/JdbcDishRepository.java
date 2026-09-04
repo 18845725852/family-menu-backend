@@ -66,6 +66,20 @@ public class JdbcDishRepository implements DishRepository {
         return dish;
     }
 
+    @Override
+    public boolean deleteById(Long id) {
+        return jdbcTemplate.update("DELETE FROM dishes WHERE id = ?", id) > 0;
+    }
+
+    @Override
+    public boolean existsByNameAndCategory(String name, String category, Long excludeId) {
+        String sql = "SELECT COUNT(1) FROM dishes WHERE name = ? AND category = ?";
+        if (excludeId == null) {
+            return jdbcTemplate.queryForObject(sql, Integer.class, name, category) > 0;
+        }
+        return jdbcTemplate.queryForObject(sql + " AND id <> ?", Integer.class, name, category, excludeId) > 0;
+    }
+
     private Dish map(java.sql.ResultSet rs) throws java.sql.SQLException {
         return new Dish(rs.getLong("id"), rs.getString("name"), rs.getString("category"),
                 rs.getString("image_url"), rs.getBoolean("available"),

@@ -46,4 +46,15 @@ public class InMemoryDishRepository implements DishRepository {
         dishes.put(id, saved);
         return saved;
     }
+
+    @Override
+    public boolean deleteById(Long id) {
+        return dishes.remove(id) != null;
+    }
+
+    @Override
+    public boolean existsByNameAndCategory(String name, String category, Long excludeId) {
+        return dishes.values().stream().anyMatch(dish -> !dish.getId().equals(excludeId)
+                && dish.getName().equals(name) && dish.getCategory().equals(category));
+    }
 }

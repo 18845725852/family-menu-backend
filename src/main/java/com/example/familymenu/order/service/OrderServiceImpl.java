@@ -42,6 +42,12 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public Order detail(Long id) {
+        return orderRepository.findById(id)
+                .orElseThrow(() -> new BusinessException("订单不存在: " + id));
+    }
+
+    @Override
     public void delete(Long id) {
         if (!orderRepository.deleteById(id)) {
             throw new BusinessException("订单不存在: " + id);
