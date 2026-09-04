@@ -57,4 +57,10 @@ public class InMemoryDishRepository implements DishRepository {
         return dishes.values().stream().anyMatch(dish -> !dish.getId().equals(excludeId)
                 && dish.getName().equals(name) && dish.getCategory().equals(category));
     }
+
+    @Override
+    public long countByCategory(String category) { return dishes.values().stream().filter(d -> d.getCategory().equals(category)).count(); }
+
+    @Override
+    public void renameCategory(String oldName, String newName) { dishes.replaceAll((id, d) -> d.getCategory().equals(oldName) ? new Dish(d.getId(), d.getName(), newName, d.getImageUrl(), d.isAvailable(), d.getSort()) : d); }
 }

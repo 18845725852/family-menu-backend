@@ -52,6 +52,8 @@ export MYSQL_URL='jdbc:mysql://127.0.0.1:3306/family_menu?useUnicode=true&charac
 mvn spring-boot:run -Dspring-boot.run.profiles=memory
 ```
 
+如果需要按家庭菜单清单重新初始化菜品和类型，请手动执行 `src/main/resources/reset-and-seed-menu.sql`。该脚本会清空现有订单、菜品和菜品类型，请确认后再执行；应用启动不会自动执行该脚本。
+
 ## 接口
 
 启动后访问 `http://localhost:8081/` 可打开临时测试台，用于查看菜单、加入点菜篮、提交订单和查看历史订单。若服务在页面加入前已经启动，需要重启服务才能加载该页面。

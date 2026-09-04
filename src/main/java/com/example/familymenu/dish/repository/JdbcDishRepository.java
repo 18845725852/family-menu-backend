@@ -80,6 +80,12 @@ public class JdbcDishRepository implements DishRepository {
         return jdbcTemplate.queryForObject(sql + " AND id <> ?", Integer.class, name, category, excludeId) > 0;
     }
 
+    @Override
+    public long countByCategory(String category) { return jdbcTemplate.queryForObject("SELECT COUNT(1) FROM dishes WHERE category = ?", Long.class, category); }
+
+    @Override
+    public void renameCategory(String oldName, String newName) { jdbcTemplate.update("UPDATE dishes SET category = ? WHERE category = ?", newName, oldName); }
+
     private Dish map(java.sql.ResultSet rs) throws java.sql.SQLException {
         return new Dish(rs.getLong("id"), rs.getString("name"), rs.getString("category"),
                 rs.getString("image_url"), rs.getBoolean("available"),

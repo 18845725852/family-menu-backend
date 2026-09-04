@@ -16,4 +16,8 @@ public interface DishRepository {
     boolean deleteById(Long id);
 
     boolean existsByNameAndCategory(String name, String category, Long excludeId);
+
+    long countByCategory(String category);
+
+    void renameCategory(String oldName, String newName);
 }
