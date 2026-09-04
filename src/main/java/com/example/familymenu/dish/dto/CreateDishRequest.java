@@ -11,6 +11,7 @@ public class CreateDishRequest {
     @NotBlank(message = "分类不能为空")
     private String category;
     private String imageUrl;
+    private String description;
     private Integer sort;
 
     public CreateDishRequest() {
@@ -21,6 +22,8 @@ public class CreateDishRequest {
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
     public String getImageUrl() { return imageUrl; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public Integer getSort() { return sort; }
     public void setSort(Integer sort) { this.sort = sort; }

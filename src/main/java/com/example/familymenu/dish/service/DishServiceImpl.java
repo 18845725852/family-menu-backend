@@ -29,7 +29,7 @@ public class DishServiceImpl implements DishService {
         ensureCategory(request.getCategory());
         ensureUnique(request.getName(), request.getCategory(), null);
         int sort = request.getSort() == null ? 0 : request.getSort();
-        return dishRepository.save(new Dish(null, request.getName(), request.getCategory(),
+        return dishRepository.save(new Dish(null, request.getName(), request.getCategory(), request.getDescription(),
                 request.getImageUrl(), true, sort));
     }
 
@@ -40,7 +40,7 @@ public class DishServiceImpl implements DishService {
         ensureCategory(request.getCategory());
         ensureUnique(request.getName(), request.getCategory(), id);
         int sort = request.getSort() == null ? dish.getSort() : request.getSort();
-        return dishRepository.save(new Dish(dish.getId(), request.getName(), request.getCategory(),
+        return dishRepository.save(new Dish(dish.getId(), request.getName(), request.getCategory(), request.getDescription(),
                 request.getImageUrl(), dish.isAvailable(), sort));
     }
 
@@ -48,7 +48,7 @@ public class DishServiceImpl implements DishService {
     public Dish updateAvailability(Long id, boolean available) {
         Dish dish = dishRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("菜品不存在: " + id));
-        return dishRepository.save(new Dish(dish.getId(), dish.getName(), dish.getCategory(),
+        return dishRepository.save(new Dish(dish.getId(), dish.getName(), dish.getCategory(), dish.getDescription(),
                 dish.getImageUrl(), available, dish.getSort()));
     }
 

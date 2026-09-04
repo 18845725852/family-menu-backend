@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS dishes (
     id BIGINT NOT NULL AUTO_INCREMENT,
     name VARCHAR(50) NOT NULL,
     category VARCHAR(50) NOT NULL,
+    description VARCHAR(200),
     image_url VARCHAR(500),
     available BOOLEAN NOT NULL DEFAULT TRUE,
     sort INT NOT NULL DEFAULT 0,
