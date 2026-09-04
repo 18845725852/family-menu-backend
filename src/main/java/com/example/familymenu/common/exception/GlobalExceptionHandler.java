@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -25,6 +26,20 @@ public class GlobalExceptionHandler {
                 .orElse("请求参数不合法");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.failure(
                 new ErrorResponse("VALIDATION_ERROR", message)));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleUploadSizeException(
+            MaxUploadSizeExceededException exception) {
+        return ResponseEntity.badRequest().body(ApiResponse.failure(
+                new ErrorResponse("IMAGE_TOO_LARGE", "图片不能超过10MB")));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<ErrorResponse>> handleIllegalArgumentException(
+            IllegalArgumentException exception) {
+        return ResponseEntity.badRequest().body(ApiResponse.failure(
+                new ErrorResponse("INVALID_ARGUMENT", exception.getMessage())));
     }
 
     @ExceptionHandler(Exception.class)
