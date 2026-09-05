@@ -18,3 +18,7 @@ spring:
 
 server:
   port: 8081
+
+wechat:
+  appid: ${WECHAT_APPID:wxbc338b2070fea762}
+  secret: ${WECHAT_SECRET:}

@@ -35,11 +35,13 @@ public class JdbcOrderRepository implements OrderRepository {
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
                 PreparedStatement statement = connection.prepareStatement(
-                        "INSERT INTO orders (customer_name, remark, created_at) VALUES (?, ?, ?)",
+                        "INSERT INTO orders (family_id, creator_user_id, customer_name, remark, created_at) VALUES (?, ?, ?, ?, ?)",
                         Statement.RETURN_GENERATED_KEYS);
-                statement.setString(1, order.getCustomerName());
-                statement.setString(2, order.getRemark());
-                statement.setTimestamp(3, Timestamp.valueOf(order.getCreatedAt()));
+                statement.setLong(1, order.getFamilyId());
+                statement.setLong(2, order.getCreatorUserId());
+                statement.setString(3, order.getCustomerName());
+                statement.setString(4, order.getRemark());
+                statement.setTimestamp(5, Timestamp.valueOf(order.getCreatedAt()));
                 return statement;
             }, keyHolder);
             orderId = keyHolder.getKey().longValue();
@@ -56,7 +58,7 @@ public class JdbcOrderRepository implements OrderRepository {
 
     @Override
     public Optional<Order> findById(Long id) {
-        List<Order> orders = jdbcTemplate.query("SELECT id, customer_name, remark, created_at "
+        List<Order> orders = jdbcTemplate.query("SELECT id, family_id, creator_user_id, customer_name, remark, created_at "
                         + "FROM orders WHERE id = ?", new Object[]{id}, (rs, rowNum) -> mapOrder(rs));
         return orders.isEmpty() ? Optional.<Order>empty() : Optional.of(withItems(orders.get(0)));
     }
@@ -76,7 +78,7 @@ public class JdbcOrderRepository implements OrderRepository {
 
     @Override
     public List<Order> findAll() {
-        List<Order> orders = jdbcTemplate.query("SELECT id, customer_name, remark, created_at FROM orders "
+        List<Order> orders = jdbcTemplate.query("SELECT id, family_id, creator_user_id, customer_name, remark, created_at FROM orders "
                 + "ORDER BY created_at DESC, id DESC", (rs, rowNum) -> mapOrder(rs));
         List<Order> result = new ArrayList<Order>(orders.size());
         for (Order order : orders) {
@@ -86,7 +88,9 @@ public class JdbcOrderRepository implements OrderRepository {
     }
 
     private Order mapOrder(java.sql.ResultSet rs) throws java.sql.SQLException {
-        return new Order(rs.getLong("id"), rs.getString("customer_name"), Collections.<OrderItem>emptyList(),
+        long familyId = rs.getLong("family_id");
+        long creatorUserId = rs.getLong("creator_user_id");
+        return new Order(rs.getLong("id"), rs.wasNull() ? null : familyId, creatorUserId, rs.getString("customer_name"), Collections.<OrderItem>emptyList(),
                 rs.getString("remark"), rs.getTimestamp("created_at").toLocalDateTime());
     }
 
@@ -95,7 +99,21 @@ public class JdbcOrderRepository implements OrderRepository {
                         + "WHERE order_id = ? ORDER BY id ASC", new Object[]{order.getId()}, (rs, rowNum) ->
                 new OrderItem(rs.getLong("dish_id"), rs.getString("dish_name"), rs.getInt("quantity"),
                         rs.getString("remark")));
-        return new Order(order.getId(), order.getCustomerName(), items, order.getRemark(),
+        return new Order(order.getId(), order.getFamilyId(), order.getCreatorUserId(), order.getCustomerName(), items, order.getRemark(),
                 order.getCreatedAt());
+    }
+
+    @Override
+    public List<Order> findAllByFamilyId(Long familyId) {
+        List<Order> orders = jdbcTemplate.query("SELECT id, family_id, creator_user_id, customer_name, remark, created_at FROM orders WHERE family_id = ? ORDER BY created_at DESC, id DESC", new Object[]{familyId}, (rs, rowNum) -> mapOrder(rs));
+        List<Order> result = new ArrayList<Order>(orders.size());
+        for (Order order : orders) result.add(withItems(order));
+        return result;
+    }
+
+    @Override
+    public boolean belongsToFamily(Long orderId, Long familyId) {
+        Integer count = jdbcTemplate.queryForObject("SELECT COUNT(1) FROM orders WHERE id=? AND family_id=?", Integer.class, orderId, familyId);
+        return count != null && count > 0;
     }
 }

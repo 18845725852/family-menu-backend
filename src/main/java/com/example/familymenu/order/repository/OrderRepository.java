@@ -16,4 +16,8 @@ public interface OrderRepository {
     long countItemsByDishId(Long dishId);
 
     List<Order> findAll();
+
+    List<Order> findAllByFamilyId(Long familyId);
+
+    boolean belongsToFamily(Long orderId, Long familyId);
 }

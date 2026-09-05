@@ -23,7 +23,7 @@ public class InMemoryOrderRepository implements OrderRepository {
     @Override
     public Order save(Order order) {
         Long id = order.getId() == null ? idGenerator.incrementAndGet() : order.getId();
-        Order saved = new Order(id, order.getCustomerName(),
+        Order saved = new Order(id, order.getFamilyId(), order.getCreatorUserId(), order.getCustomerName(),
                 java.util.Collections.unmodifiableList(new java.util.ArrayList<OrderItem>(order.getItems())),
                 order.getRemark(), order.getCreatedAt());
         orders.put(id, saved);
@@ -51,5 +51,17 @@ public class InMemoryOrderRepository implements OrderRepository {
         return orders.values().stream()
                 .sorted(Comparator.comparing(Order::getCreatedAt).reversed())
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Order> findAllByFamilyId(Long familyId) {
+        return findAll().stream().filter(order -> familyId != null && familyId.equals(order.getFamilyId()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean belongsToFamily(Long orderId, Long familyId) {
+        Order order = orders.get(orderId);
+        return order != null && familyId != null && familyId.equals(order.getFamilyId());
     }
 }
