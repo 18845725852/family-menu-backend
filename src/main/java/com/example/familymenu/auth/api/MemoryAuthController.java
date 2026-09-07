@@ -17,8 +17,14 @@ public class MemoryAuthController {
     @PostMapping("/wechat-login")
     public ApiResponse<WechatLoginResponse> login(@RequestBody WechatLoginRequest request) {
         String nickname = request.getNickname() == null || request.getNickname().trim().isEmpty()
-                ? "微信用户" : request.getNickname().trim();
+                ? DefaultNicknameGenerator.generate() : request.getNickname().trim();
         return ApiResponse.success(new WechatLoginResponse(1L, nickname,
                 "memory-" + UUID.randomUUID().toString().replace("-", "")));
+    }
+
+    @PostMapping("/logout")
+    @LoginRequired
+    public ApiResponse<Void> logout() {
+        return ApiResponse.success(null);
     }
 }

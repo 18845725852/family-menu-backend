@@ -42,7 +42,8 @@ public class MemoryFamilyInvitationController {
         if (familyId == null) throw new BusinessException("邀请码无效或已过期");
         Long userId = CurrentUser.requireId();
         if (!familyRepository.isMember(familyId, userId)) {
-            familyRepository.addMemberUserId(familyId, userId, "微信用户", "MEMBER");
+            familyRepository.addMemberUserId(familyId, userId,
+                    com.example.familymenu.auth.api.DefaultNicknameGenerator.generate(), "MEMBER");
         }
         return ApiResponse.success(familyRepository.findById(familyId).orElseThrow(() -> new BusinessException("家庭不存在")));
     }

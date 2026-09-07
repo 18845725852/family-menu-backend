@@ -34,7 +34,7 @@ public class OrderServiceImpl implements OrderService {
                     .orElseThrow(() -> new BusinessException("菜品不可用: " + itemRequest.getDishId()));
             items.add(new OrderItem(dish.getId(), dish.getName(), itemRequest.getQuantity(), itemRequest.getRemark()));
         }
-        Order order = new Order(null, familyId, userId, request.getCustomerName(), items, request.getRemark(),
+        Order order = new Order(null, familyId, userId, null, items, request.getRemark(),
                 LocalDateTime.now());
         return orderRepository.save(order);
     }

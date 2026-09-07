@@ -32,14 +32,20 @@ public class WechatAuthService {
             if (result.has("errcode")) throw new BusinessException("微信登录失败: " + result.path("errmsg").asText());
             String openid = result.path("openid").asText();
             if (openid.isEmpty()) throw new BusinessException("微信未返回用户标识");
-            String name = nickname == null || nickname.trim().isEmpty() ? "微信用户" : nickname.trim();
+            String name = nickname == null || nickname.trim().isEmpty()
+                    ? DefaultNicknameGenerator.generate() : nickname.trim();
             jdbc.update("INSERT INTO users(openid,nickname) VALUES(?,?) ON DUPLICATE KEY UPDATE nickname=IF(nickname='微信用户', VALUES(nickname), nickname)", openid, name);
             Long userId = jdbc.queryForObject("SELECT id FROM users WHERE openid=?", Long.class, openid);
+            String savedName = jdbc.queryForObject("SELECT nickname FROM users WHERE id=?", String.class, userId);
             String token = UUID.randomUUID().toString().replace("-", "") + UUID.randomUUID().toString().replace("-", "");
             jdbc.update("INSERT INTO user_sessions(user_id, token, expires_at) VALUES(?, ?, ?)",
                     userId, token, java.sql.Timestamp.valueOf(LocalDateTime.now().plusDays(30)));
-            return new WechatLoginResponse(userId, name, token);
+            return new WechatLoginResponse(userId, savedName, token);
         } catch (BusinessException e) { throw e; }
         catch (Exception e) { throw new BusinessException("微信登录服务暂时不可用"); }
+    }
+
+    public void logout(Long userId, String token) {
+        jdbc.update("DELETE FROM user_sessions WHERE user_id=? AND token=?", userId, token);
     }
 }

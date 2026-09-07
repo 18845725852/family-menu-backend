@@ -35,13 +35,12 @@ public class JdbcOrderRepository implements OrderRepository {
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
                 PreparedStatement statement = connection.prepareStatement(
-                        "INSERT INTO orders (family_id, creator_user_id, customer_name, remark, created_at) VALUES (?, ?, ?, ?, ?)",
+                        "INSERT INTO orders (family_id, creator_user_id, remark, created_at) VALUES (?, ?, ?, ?)",
                         Statement.RETURN_GENERATED_KEYS);
                 statement.setLong(1, order.getFamilyId());
                 statement.setLong(2, order.getCreatorUserId());
-                statement.setString(3, order.getCustomerName());
-                statement.setString(4, order.getRemark());
-                statement.setTimestamp(5, Timestamp.valueOf(order.getCreatedAt()));
+                statement.setString(3, order.getRemark());
+                statement.setTimestamp(4, Timestamp.valueOf(order.getCreatedAt()));
                 return statement;
             }, keyHolder);
             orderId = keyHolder.getKey().longValue();
@@ -52,14 +51,15 @@ public class JdbcOrderRepository implements OrderRepository {
             }
         } else {
         }
-        return new Order(orderId, order.getCustomerName(), Collections.unmodifiableList(
-                new ArrayList<OrderItem>(order.getItems())), order.getRemark(), order.getCreatedAt());
+        Optional<Order> saved = findById(orderId);
+        if (!saved.isPresent()) throw new IllegalStateException("订单保存后未找到: " + orderId);
+        return saved.get();
     }
 
     @Override
     public Optional<Order> findById(Long id) {
-        List<Order> orders = jdbcTemplate.query("SELECT id, family_id, creator_user_id, customer_name, remark, created_at "
-                        + "FROM orders WHERE id = ?", new Object[]{id}, (rs, rowNum) -> mapOrder(rs));
+        List<Order> orders = jdbcTemplate.query("SELECT o.id, o.family_id, o.creator_user_id, u.nickname AS customer_name, o.remark, o.created_at "
+                        + "FROM orders o JOIN users u ON u.id=o.creator_user_id WHERE o.id = ?", new Object[]{id}, (rs, rowNum) -> mapOrder(rs));
         return orders.isEmpty() ? Optional.<Order>empty() : Optional.of(withItems(orders.get(0)));
     }
 
@@ -78,8 +78,8 @@ public class JdbcOrderRepository implements OrderRepository {
 
     @Override
     public List<Order> findAll() {
-        List<Order> orders = jdbcTemplate.query("SELECT id, family_id, creator_user_id, customer_name, remark, created_at FROM orders "
-                + "ORDER BY created_at DESC, id DESC", (rs, rowNum) -> mapOrder(rs));
+        List<Order> orders = jdbcTemplate.query("SELECT o.id, o.family_id, o.creator_user_id, u.nickname AS customer_name, o.remark, o.created_at FROM orders o "
+                + "JOIN users u ON u.id=o.creator_user_id ORDER BY o.created_at DESC, o.id DESC", (rs, rowNum) -> mapOrder(rs));
         List<Order> result = new ArrayList<Order>(orders.size());
         for (Order order : orders) {
             result.add(withItems(order));
@@ -90,7 +90,7 @@ public class JdbcOrderRepository implements OrderRepository {
     private Order mapOrder(java.sql.ResultSet rs) throws java.sql.SQLException {
         long familyId = rs.getLong("family_id");
         long creatorUserId = rs.getLong("creator_user_id");
-        return new Order(rs.getLong("id"), rs.wasNull() ? null : familyId, creatorUserId, rs.getString("customer_name"), Collections.<OrderItem>emptyList(),
+        return new Order(rs.getLong("id"), familyId, creatorUserId, rs.getString("customer_name"), Collections.<OrderItem>emptyList(),
                 rs.getString("remark"), rs.getTimestamp("created_at").toLocalDateTime());
     }
 
@@ -105,7 +105,7 @@ public class JdbcOrderRepository implements OrderRepository {
 
     @Override
     public List<Order> findAllByFamilyId(Long familyId) {
-        List<Order> orders = jdbcTemplate.query("SELECT id, family_id, creator_user_id, customer_name, remark, created_at FROM orders WHERE family_id = ? ORDER BY created_at DESC, id DESC", new Object[]{familyId}, (rs, rowNum) -> mapOrder(rs));
+        List<Order> orders = jdbcTemplate.query("SELECT o.id, o.family_id, o.creator_user_id, u.nickname AS customer_name, o.remark, o.created_at FROM orders o JOIN users u ON u.id=o.creator_user_id WHERE o.family_id = ? ORDER BY o.created_at DESC, o.id DESC", new Object[]{familyId}, (rs, rowNum) -> mapOrder(rs));
         List<Order> result = new ArrayList<Order>(orders.size());
         for (Order order : orders) result.add(withItems(order));
         return result;

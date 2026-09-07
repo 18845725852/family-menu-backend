@@ -108,11 +108,10 @@ DELETE /api/dishes/1
 ### 提交点菜订单
 
 ```http
-POST /api/orders
+POST /api/families/{familyId}/orders
 Content-Type: application/json
 
 {
-  "customerName": "妈妈",
   "items": [
     {"dishId": 1, "quantity": 1, "remark": "少油"},
     {"dishId": 2, "quantity": 1}
@@ -124,23 +123,22 @@ Content-Type: application/json
 ### 查询订单
 
 ```http
-GET /api/orders
-GET /api/orders
+GET /api/families/{familyId}/orders
 ```
 
 ### 查询订单详情
 
 ```http
-GET /api/orders/1
+GET /api/families/{familyId}/orders/1
 ```
 
 ### 删除订单
 
 ```http
-DELETE /api/orders/1
+DELETE /api/families/{familyId}/orders/1
 ```
 
 ## 下一步接入微信
 
-1. 增加微信 `code2session` Gateway，以 `openid` 替换 `customerName` 的人工填写。
+1. 完善微信登录、家庭成员权限和会话管理。
 2. 增加家庭空间和成员表，再给“新增菜品”接口加管理员权限。

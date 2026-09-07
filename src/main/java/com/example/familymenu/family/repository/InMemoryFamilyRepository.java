@@ -21,22 +21,12 @@ public class InMemoryFamilyRepository implements FamilyRepository {
     private final Map<Long, List<FamilyMember>> members = new HashMap<Long, List<FamilyMember>>();
     private final AtomicLong memberIds = new AtomicLong();
 
-    public synchronized Family create(String name, String ownerName) {
-        long userId = ids.incrementAndGet();
+    public synchronized Family createForUser(String name, Long userId) {
         long familyId = ids.incrementAndGet();
         Family family = new Family(familyId, name, userId);
         families.put(familyId, family);
         List<FamilyMember> familyMembers = new ArrayList<FamilyMember>();
-        familyMembers.add(new FamilyMember(memberIds.incrementAndGet(), familyId, userId, ownerName, "OWNER"));
-        members.put(familyId, familyMembers);
-        return family;
-    }
-    public synchronized Family createForUser(String name, Long userId, String ownerName) {
-        long familyId = ids.incrementAndGet();
-        Family family = new Family(familyId, name, userId);
-        families.put(familyId, family);
-        List<FamilyMember> familyMembers = new ArrayList<FamilyMember>();
-        familyMembers.add(new FamilyMember(memberIds.incrementAndGet(), familyId, userId, ownerName, "OWNER"));
+        familyMembers.add(new FamilyMember(memberIds.incrementAndGet(), familyId, userId, "微信用户", "OWNER"));
         members.put(familyId, familyMembers);
         return family;
     }

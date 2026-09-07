@@ -80,7 +80,6 @@ CREATE TABLE IF NOT EXISTS orders (
     id BIGINT NOT NULL AUTO_INCREMENT,
     family_id BIGINT NOT NULL,
     creator_user_id BIGINT NOT NULL,
-    customer_name VARCHAR(30) NOT NULL,
     remark VARCHAR(200),
     created_at TIMESTAMP NOT NULL,
     PRIMARY KEY (id),

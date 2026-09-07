@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Profile;
 
 @RestController
@@ -21,5 +22,13 @@ public class AuthController {
     @PostMapping("/wechat-login")
     public ApiResponse<WechatLoginResponse> login(@Valid @RequestBody WechatLoginRequest request) {
         return ApiResponse.success(service.login(request.getCode(), request.getNickname()));
+    }
+
+    @PostMapping("/logout")
+    @LoginRequired
+    public ApiResponse<Void> logout(HttpServletRequest request) {
+        String token = request.getHeader("Authorization").substring("Bearer ".length()).trim();
+        service.logout(CurrentUser.requireId(), token);
+        return ApiResponse.success(null);
     }
 }

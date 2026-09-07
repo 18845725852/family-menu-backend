@@ -1,7 +1,6 @@
 package com.example.familymenu.order.dto;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 
@@ -9,9 +8,6 @@ import java.util.List;
 
 public class CreateOrderRequest {
 
-    @NotBlank(message = "点菜人不能为空")
-    @Size(max = 30, message = "点菜人不能超过30个字")
-    private String customerName;
     @NotEmpty(message = "至少选择一道菜")
     @Valid
     private List<OrderItemRequest> items;
@@ -21,8 +17,6 @@ public class CreateOrderRequest {
     public CreateOrderRequest() {
     }
 
-    public String getCustomerName() { return customerName; }
-    public void setCustomerName(String customerName) { this.customerName = customerName; }
     public List<OrderItemRequest> getItems() { return items; }
     public void setItems(List<OrderItemRequest> items) { this.items = items; }
     public String getRemark() { return remark; }

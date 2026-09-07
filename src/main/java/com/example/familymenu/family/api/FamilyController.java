@@ -2,7 +2,7 @@ package com.example.familymenu.family.api;
 import com.example.familymenu.common.api.ApiResponse; import com.example.familymenu.family.domain.*; import com.example.familymenu.family.dto.*; import com.example.familymenu.family.service.FamilyService; import javax.validation.Valid; import lombok.RequiredArgsConstructor; import org.springframework.web.bind.annotation.*; import java.util.*;
 import com.example.familymenu.auth.api.LoginRequired; import com.example.familymenu.auth.api.CurrentUser;
 @RestController @RequestMapping("/api/families") @RequiredArgsConstructor @LoginRequired public class FamilyController { private final FamilyService service;
- @PostMapping public ApiResponse<Family> create(@Valid @RequestBody CreateFamilyRequest r){return ApiResponse.success(service.createForUser(r.getName(),CurrentUser.requireId(),r.getOwnerName()));}
+ @PostMapping public ApiResponse<Family> create(@Valid @RequestBody CreateFamilyRequest r){return ApiResponse.success(service.createForUser(r.getName(),CurrentUser.requireId()));}
  @GetMapping("/{id}") public ApiResponse<Family> get(@PathVariable Long id){return ApiResponse.success(service.get(id));}
  @GetMapping public ApiResponse<List<Family>> mine(){return ApiResponse.success(service.mineByUserId(CurrentUser.requireId()));}
  @GetMapping("/{id}/members") public ApiResponse<List<FamilyMember>> members(@PathVariable Long id){return ApiResponse.success(service.members(id));}
