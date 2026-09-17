@@ -36,11 +36,13 @@ public class WechatAuthService {
                     ? DefaultNicknameGenerator.generate() : nickname.trim();
             jdbc.update("INSERT INTO users(openid,nickname) VALUES(?,?) ON DUPLICATE KEY UPDATE nickname=IF(nickname='微信用户', VALUES(nickname), nickname)", openid, name);
             Long userId = jdbc.queryForObject("SELECT id FROM users WHERE openid=?", Long.class, openid);
-            String savedName = jdbc.queryForObject("SELECT nickname FROM users WHERE id=?", String.class, userId);
+            java.util.Map<String, Object> user = jdbc.queryForMap("SELECT nickname, avatar_url FROM users WHERE id=?", userId);
+            String savedName = (String) user.get("nickname");
+            String avatarUrl = (String) user.get("avatar_url");
             String token = UUID.randomUUID().toString().replace("-", "") + UUID.randomUUID().toString().replace("-", "");
             jdbc.update("INSERT INTO user_sessions(user_id, token, expires_at) VALUES(?, ?, ?)",
                     userId, token, java.sql.Timestamp.valueOf(LocalDateTime.now().plusDays(30)));
-            return new WechatLoginResponse(userId, savedName, token);
+            return new WechatLoginResponse(userId, savedName, token, avatarUrl);
         } catch (BusinessException e) { throw e; }
         catch (Exception e) { throw new BusinessException("微信登录服务暂时不可用"); }
     }

@@ -25,7 +25,7 @@ public class InMemoryOrderRepository implements OrderRepository {
         Long id = order.getId() == null ? idGenerator.incrementAndGet() : order.getId();
         Order saved = new Order(id, order.getFamilyId(), order.getCreatorUserId(), order.getCustomerName(),
                 java.util.Collections.unmodifiableList(new java.util.ArrayList<OrderItem>(order.getItems())),
-                order.getRemark(), order.getCreatedAt());
+                order.getRemark(), order.getCreatedAt(), order.getCustomerAvatarUrl());
         orders.put(id, saved);
         return saved;
     }

@@ -19,7 +19,7 @@ public class MemoryAuthController {
         String nickname = request.getNickname() == null || request.getNickname().trim().isEmpty()
                 ? DefaultNicknameGenerator.generate() : request.getNickname().trim();
         return ApiResponse.success(new WechatLoginResponse(1L, nickname,
-                "memory-" + UUID.randomUUID().toString().replace("-", "")));
+                "memory-" + UUID.randomUUID().toString().replace("-", ""), MemoryUserProfileController.storedAvatar));
     }
 
     @PostMapping("/logout")

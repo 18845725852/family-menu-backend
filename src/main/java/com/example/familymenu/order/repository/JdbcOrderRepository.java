@@ -58,7 +58,7 @@ public class JdbcOrderRepository implements OrderRepository {
 
     @Override
     public Optional<Order> findById(Long id) {
-        List<Order> orders = jdbcTemplate.query("SELECT o.id, o.family_id, o.creator_user_id, u.nickname AS customer_name, o.remark, o.created_at "
+        List<Order> orders = jdbcTemplate.query("SELECT o.id, o.family_id, o.creator_user_id, u.nickname AS customer_name, u.avatar_url AS customer_avatar_url, o.remark, o.created_at "
                         + "FROM orders o JOIN users u ON u.id=o.creator_user_id WHERE o.id = ?", new Object[]{id}, (rs, rowNum) -> mapOrder(rs));
         return orders.isEmpty() ? Optional.<Order>empty() : Optional.of(withItems(orders.get(0)));
     }
@@ -78,7 +78,7 @@ public class JdbcOrderRepository implements OrderRepository {
 
     @Override
     public List<Order> findAll() {
-        List<Order> orders = jdbcTemplate.query("SELECT o.id, o.family_id, o.creator_user_id, u.nickname AS customer_name, o.remark, o.created_at FROM orders o "
+        List<Order> orders = jdbcTemplate.query("SELECT o.id, o.family_id, o.creator_user_id, u.nickname AS customer_name, u.avatar_url AS customer_avatar_url, o.remark, o.created_at FROM orders o "
                 + "JOIN users u ON u.id=o.creator_user_id ORDER BY o.created_at DESC, o.id DESC", (rs, rowNum) -> mapOrder(rs));
         List<Order> result = new ArrayList<Order>(orders.size());
         for (Order order : orders) {
@@ -91,7 +91,7 @@ public class JdbcOrderRepository implements OrderRepository {
         long familyId = rs.getLong("family_id");
         long creatorUserId = rs.getLong("creator_user_id");
         return new Order(rs.getLong("id"), familyId, creatorUserId, rs.getString("customer_name"), Collections.<OrderItem>emptyList(),
-                rs.getString("remark"), rs.getTimestamp("created_at").toLocalDateTime());
+                rs.getString("remark"), rs.getTimestamp("created_at").toLocalDateTime(), rs.getString("customer_avatar_url"));
     }
 
     private Order withItems(Order order) {
@@ -100,12 +100,12 @@ public class JdbcOrderRepository implements OrderRepository {
                 new OrderItem(rs.getLong("dish_id"), rs.getString("dish_name"), rs.getInt("quantity"),
                         rs.getString("remark")));
         return new Order(order.getId(), order.getFamilyId(), order.getCreatorUserId(), order.getCustomerName(), items, order.getRemark(),
-                order.getCreatedAt());
+                order.getCreatedAt(), order.getCustomerAvatarUrl());
     }
 
     @Override
     public List<Order> findAllByFamilyId(Long familyId) {
-        List<Order> orders = jdbcTemplate.query("SELECT o.id, o.family_id, o.creator_user_id, u.nickname AS customer_name, o.remark, o.created_at FROM orders o JOIN users u ON u.id=o.creator_user_id WHERE o.family_id = ? ORDER BY o.created_at DESC, o.id DESC", new Object[]{familyId}, (rs, rowNum) -> mapOrder(rs));
+        List<Order> orders = jdbcTemplate.query("SELECT o.id, o.family_id, o.creator_user_id, u.nickname AS customer_name, u.avatar_url AS customer_avatar_url, o.remark, o.created_at FROM orders o JOIN users u ON u.id=o.creator_user_id WHERE o.family_id = ? ORDER BY o.created_at DESC, o.id DESC", new Object[]{familyId}, (rs, rowNum) -> mapOrder(rs));
         List<Order> result = new ArrayList<Order>(orders.size());
         for (Order order : orders) result.add(withItems(order));
         return result;

@@ -2,6 +2,7 @@ package com.example.familymenu.family.service;
 
 import com.example.familymenu.family.domain.Family;
 import com.example.familymenu.family.dto.InviteCodeResponse;
+import com.example.familymenu.family.dto.InvitePreviewResponse;
 import com.example.familymenu.family.repository.FamilyRepository;
 import com.example.familymenu.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -30,15 +31,25 @@ public class FamilyInvitationService {
         return new InviteCodeResponse(familyId, code, expires.toString());
     }
 
+    public InvitePreviewResponse preview(String code) {
+        Long familyId = findFamilyIdByCode(code);
+        Family family = familyRepository.findById(familyId).orElseThrow(() -> new BusinessException("家庭不存在"));
+        return new InvitePreviewResponse(family.getId(), family.getName(), code.trim().toUpperCase());
+    }
+
     public Family join(String code, Long userId) {
-        List<Long> familyIds = jdbc.query("SELECT family_id FROM family_invitations WHERE invite_code=? AND expires_at>CURRENT_TIMESTAMP", new Object[]{code.trim().toUpperCase()}, (rs, n) -> rs.getLong(1));
-        if (familyIds.isEmpty()) throw new BusinessException("邀请码无效或已过期");
-        Long familyId = familyIds.get(0);
+        Long familyId = findFamilyIdByCode(code);
         if (!familyRepository.isMember(familyId, userId)) {
             String nickname = jdbc.queryForObject("SELECT nickname FROM users WHERE id=?", String.class, userId);
             familyRepository.addMemberUserId(familyId, userId, nickname, "MEMBER");
         }
         return familyRepository.findById(familyId).orElseThrow(() -> new BusinessException("家庭不存在"));
+    }
+
+    private Long findFamilyIdByCode(String code) {
+        List<Long> familyIds = jdbc.query("SELECT family_id FROM family_invitations WHERE invite_code=? AND expires_at>CURRENT_TIMESTAMP", new Object[]{code.trim().toUpperCase()}, (rs, n) -> rs.getLong(1));
+        if (familyIds.isEmpty()) throw new BusinessException("邀请码无效或已过期");
+        return familyIds.get(0);
     }
 
     private void requireMember(Long familyId, Long userId) { if (!familyRepository.isMember(familyId, userId)) throw new BusinessException("你不是该家庭成员"); }

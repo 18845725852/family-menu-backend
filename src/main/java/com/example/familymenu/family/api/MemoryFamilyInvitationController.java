@@ -6,6 +6,7 @@ import com.example.familymenu.common.api.ApiResponse;
 import com.example.familymenu.common.exception.BusinessException;
 import com.example.familymenu.family.domain.Family;
 import com.example.familymenu.family.dto.InviteCodeResponse;
+import com.example.familymenu.family.dto.InvitePreviewResponse;
 import com.example.familymenu.family.dto.JoinFamilyRequest;
 import com.example.familymenu.family.repository.FamilyRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,14 @@ public class MemoryFamilyInvitationController {
         String code = UUID.randomUUID().toString().replace("-", "").substring(0, 6).toUpperCase();
         codes.put(code, familyId);
         return ApiResponse.success(new InviteCodeResponse(familyId, code, LocalDateTime.now().plusDays(7).toString()));
+    }
+
+    @GetMapping("/family-invitations/preview")
+    public ApiResponse<InvitePreviewResponse> preview(@RequestParam String inviteCode) {
+        Long familyId = codes.get(inviteCode.trim().toUpperCase());
+        if (familyId == null) throw new BusinessException("邀请码无效或已过期");
+        Family family = familyRepository.findById(familyId).orElseThrow(() -> new BusinessException("家庭不存在"));
+        return ApiResponse.success(new InvitePreviewResponse(family.getId(), family.getName(), inviteCode.trim().toUpperCase()));
     }
 
     @PostMapping("/family-invitations/join")
