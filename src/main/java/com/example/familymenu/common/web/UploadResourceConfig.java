@@ -12,7 +12,7 @@ public class UploadResourceConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:uploads/")
-                .setCacheControl(CacheControl.maxAge(Duration.ofDays(30)).cachePublic())
+                .setCacheControl(CacheControl.maxAge(Duration.ofDays(365)).cachePublic())
                 .resourceChain(true);
     }
 }
