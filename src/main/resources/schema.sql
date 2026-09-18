@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS dishes (
     name VARCHAR(50) NOT NULL,
     category VARCHAR(50) NOT NULL,
     description VARCHAR(200),
+    recipe TEXT,
     image_url VARCHAR(500),
     available BOOLEAN NOT NULL DEFAULT TRUE,
     sort INT NOT NULL DEFAULT 0,
@@ -108,4 +109,15 @@ CREATE TABLE IF NOT EXISTS restaurants (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     UNIQUE KEY uk_restaurants_name (name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS user_wheel_restaurants (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    name VARCHAR(20) NOT NULL,
+    sort INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    KEY idx_user_wheel_restaurants_user_id (user_id),
+    CONSTRAINT fk_user_wheel_restaurants_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -1,0 +1,1 @@
+ALTER TABLE dishes ADD COLUMN IF NOT EXISTS recipe TEXT AFTER description;

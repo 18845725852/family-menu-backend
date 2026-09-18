@@ -41,8 +41,8 @@ public class InMemoryDishRepository implements DishRepository {
     @Override
     public Dish save(Dish dish) {
         Long id = dish.getId() == null ? idGenerator.incrementAndGet() : dish.getId();
-        Dish saved = new Dish(id, dish.getName(), dish.getCategory(), dish.getImageUrl(),
-                dish.isAvailable(), dish.getSort());
+        Dish saved = new Dish(id, dish.getName(), dish.getCategory(), dish.getDescription(), dish.getRecipe(),
+                dish.getImageUrl(), dish.isAvailable(), dish.getSort());
         dishes.put(id, saved);
         return saved;
     }
@@ -62,5 +62,5 @@ public class InMemoryDishRepository implements DishRepository {
     public long countByCategory(String category) { return dishes.values().stream().filter(d -> d.getCategory().equals(category)).count(); }
 
     @Override
-    public void renameCategory(String oldName, String newName) { dishes.replaceAll((id, d) -> d.getCategory().equals(oldName) ? new Dish(d.getId(), d.getName(), newName, d.getImageUrl(), d.isAvailable(), d.getSort()) : d); }
+    public void renameCategory(String oldName, String newName) { dishes.replaceAll((id, d) -> d.getCategory().equals(oldName) ? new Dish(d.getId(), d.getName(), newName, d.getDescription(), d.getRecipe(), d.getImageUrl(), d.isAvailable(), d.getSort()) : d); }
 }

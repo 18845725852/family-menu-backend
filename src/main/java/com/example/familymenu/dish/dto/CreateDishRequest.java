@@ -12,6 +12,7 @@ public class CreateDishRequest {
     private String category;
     private String imageUrl;
     private String description;
+    private String recipe;
     private Integer sort;
 
     public CreateDishRequest() {
@@ -24,6 +25,8 @@ public class CreateDishRequest {
     public String getImageUrl() { return imageUrl; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+    public String getRecipe() { return recipe; }
+    public void setRecipe(String recipe) { this.recipe = recipe; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
     public Integer getSort() { return sort; }
     public void setSort(Integer sort) { this.sort = sort; }
