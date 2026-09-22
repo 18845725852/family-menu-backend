@@ -29,7 +29,8 @@ public class UploadController {
     }
 
     @PostMapping("/image")
-    public ApiResponse<String> upload(@RequestParam("file") MultipartFile file) throws IOException {
+    public ApiResponse<String> upload(@RequestParam("file") MultipartFile file,
+                                   @RequestParam(value = "category", required = false) String category) throws IOException {
         if (file == null || file.isEmpty()) throw new IllegalArgumentException("请选择图片");
         if (file.getSize() > 10L * 1024 * 1024) throw new IllegalArgumentException("图片不能超过10MB");
         String type = file.getContentType() == null ? "" : file.getContentType();
@@ -39,7 +40,7 @@ public class UploadController {
         if (source == null) throw new IllegalArgumentException("图片格式无法识别");
         BufferedImage resized = resize(source, MAX_IMAGE_SIZE, ".png".equals(ext));
         byte[] content = ".png".equals(ext) ? toPng(resized) : toJpeg(resized);
-        return ApiResponse.success(storage.store(content, ext));
+        return ApiResponse.success(storage.store(content, ext, category));
     }
 
     private BufferedImage resize(BufferedImage source, int maxSize, boolean keepAlpha) {

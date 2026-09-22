@@ -158,10 +158,10 @@ Content-Type: multipart/form-data
 file: 图片文件
 ```
 
-成功后 `data` 是 `/api/files/202609/{文件名}`。小程序和测试页按原来的方式保存到 `imageUrl` 即可。读取：
+菜品图会存到 `dishes/`，头像会存到 `avatars/`。成功后 `data` 是 `/api/files/dishes/202609/{文件名}` 或 `/api/files/avatars/202609/{文件名}`。小程序和测试页按原来的方式保存到 `imageUrl` 或 `avatarUrl` 即可。读取：
 
 ```http
-GET /api/files/202609/{文件名}
+GET /api/files/dishes/202609/{文件名}
 ```
 
 已经迁走的旧图放在文件目录的 `legacy/` 下，原来的 `/uploads/菜名.png` 继续从这里读取。启动时不会再从项目目录复制图片。

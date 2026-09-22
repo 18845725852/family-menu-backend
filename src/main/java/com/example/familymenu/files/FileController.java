@@ -19,9 +19,18 @@ public class FileController {
         this.storage = storage;
     }
 
-    @GetMapping("/api/files/{month}/{name:.+}")
+    @GetMapping("/api/files/{month:[0-9]{6}}/{name:.+}")
     public ResponseEntity<Resource> download(@PathVariable String month, @PathVariable String name) {
-        Path file = storage.find(month, name);
+        return respond(storage.find(month, name), name);
+    }
+
+    @GetMapping("/api/files/{category:dishes|avatars}/{month:[0-9]{6}}/{name:.+}")
+    public ResponseEntity<Resource> downloadCategorized(@PathVariable String category, @PathVariable String month,
+                                                        @PathVariable String name) {
+        return respond(storage.find(category, month, name), name);
+    }
+
+    private ResponseEntity<Resource> respond(Path file, String name) {
         if (file == null) return ResponseEntity.notFound().build();
         MediaType mediaType = name.endsWith(".png") ? MediaType.IMAGE_PNG : MediaType.IMAGE_JPEG;
         return ResponseEntity.ok()
