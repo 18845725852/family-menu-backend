@@ -138,6 +138,34 @@ GET /api/families/{familyId}/orders/1
 DELETE /api/families/{familyId}/orders/1
 ```
 
+
+## 菜品图片
+
+图片不放进部署包。上传后写到服务器本机目录，默认是 `~/.family-menu/files`，下载仍走现在的后端域名。
+
+```bash
+export FILE_STORAGE_DIR=/var/lib/family-menu/files
+```
+
+不设置时使用当前用户家目录下的 `.family-menu/files`。这个目录要放在项目外面，重新发布 jar 时不要删它。
+
+新图片接口：
+
+```http
+POST /api/uploads/image
+Content-Type: multipart/form-data
+
+file: 图片文件
+```
+
+成功后 `data` 是 `/api/files/202609/{文件名}`。小程序和测试页按原来的方式保存到 `imageUrl` 即可。读取：
+
+```http
+GET /api/files/202609/{文件名}
+```
+
+项目里的 `uploads/` 只作为旧图片来源。服务启动时会把其中的图片复制到文件目录的 `legacy/`，原来的 `/uploads/菜名.png` 继续可用。第一次升级时让旧目录还能被读到，复制完成后，以后的发布就可以不再带上 `uploads/`。
+
 ## 下一步接入微信
 
 1. 完善微信登录、家庭成员权限和会话管理。

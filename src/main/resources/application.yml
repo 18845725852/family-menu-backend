@@ -24,3 +24,6 @@ server:
 wechat:
   appid: ${WECHAT_APPID:wxbc338b2070fea762}
   secret: ${WECHAT_SECRET:}
+
+files:
+  storage-dir: ${FILE_STORAGE_DIR:${user.home}/.family-menu/files}
