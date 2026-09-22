@@ -7,8 +7,10 @@ CREATE TABLE IF NOT EXISTS dishes (
     image_url VARCHAR(500),
     available BOOLEAN NOT NULL DEFAULT TRUE,
     sort INT NOT NULL DEFAULT 0,
+    family_id BIGINT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    KEY idx_dishes_family_id (family_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS dish_categories (
@@ -47,6 +49,7 @@ CREATE TABLE IF NOT EXISTS families (
     id BIGINT NOT NULL AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
     owner_user_id BIGINT NOT NULL,
+    custom_menu BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     CONSTRAINT fk_families_owner FOREIGN KEY (owner_user_id) REFERENCES users (id)

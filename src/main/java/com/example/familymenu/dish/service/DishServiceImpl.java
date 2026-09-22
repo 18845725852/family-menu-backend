@@ -30,7 +30,7 @@ public class DishServiceImpl implements DishService {
         ensureUnique(request.getName(), request.getCategory(), null);
         int sort = request.getSort() == null ? 0 : request.getSort();
         return dishRepository.save(new Dish(null, request.getName(), request.getCategory(), request.getDescription(), request.getRecipe(),
-                request.getImageUrl(), true, sort));
+                request.getImageUrl(), true, sort, null));
     }
 
     @Override
@@ -41,7 +41,7 @@ public class DishServiceImpl implements DishService {
         ensureUnique(request.getName(), request.getCategory(), id);
         int sort = request.getSort() == null ? dish.getSort() : request.getSort();
         return dishRepository.save(new Dish(dish.getId(), request.getName(), request.getCategory(), request.getDescription(), request.getRecipe(),
-                request.getImageUrl(), dish.isAvailable(), sort));
+                request.getImageUrl(), dish.isAvailable(), sort, dish.getFamilyId()));
     }
 
     @Override
@@ -49,7 +49,7 @@ public class DishServiceImpl implements DishService {
         Dish dish = dishRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("菜品不存在: " + id));
         return dishRepository.save(new Dish(dish.getId(), dish.getName(), dish.getCategory(), dish.getDescription(), dish.getRecipe(),
-                dish.getImageUrl(), available, dish.getSort()));
+                dish.getImageUrl(), available, dish.getSort(), dish.getFamilyId()));
     }
 
     @Override

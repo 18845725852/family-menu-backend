@@ -13,6 +13,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
@@ -30,17 +31,30 @@ public class UploadController {
 
     @PostMapping("/image")
     public ApiResponse<String> upload(@RequestParam("file") MultipartFile file,
-                                   @RequestParam(value = "category", required = false) String category) throws IOException {
+                                   @RequestParam(value = "category", required = false) String category,
+                                   @RequestParam(value = "familyId", required = false) Long familyId) throws IOException {
         if (file == null || file.isEmpty()) throw new IllegalArgumentException("请选择图片");
         if (file.getSize() > 10L * 1024 * 1024) throw new IllegalArgumentException("图片不能超过10MB");
-        String type = file.getContentType() == null ? "" : file.getContentType();
-        if (!type.startsWith("image/")) throw new IllegalArgumentException("只支持图片文件");
-        String ext = "image/png".equals(type) ? ".png" : ".jpg";
-        BufferedImage source = ImageIO.read(file.getInputStream());
+        byte[] original = file.getBytes();
+        String type = file.getContentType() == null ? "" : file.getContentType().toLowerCase();
+        boolean png = "image/png".equals(type) || isPng(original);
+        if (!type.startsWith("image/") && !"application/octet-stream".equals(type) && !type.isEmpty() && !png) {
+            throw new IllegalArgumentException("只支持图片文件");
+        }
+        String ext = png ? ".png" : ".jpg";
+        BufferedImage source = ImageIO.read(new ByteArrayInputStream(original));
         if (source == null) throw new IllegalArgumentException("图片格式无法识别");
         BufferedImage resized = resize(source, MAX_IMAGE_SIZE, ".png".equals(ext));
         byte[] content = ".png".equals(ext) ? toPng(resized) : toJpeg(resized);
-        return ApiResponse.success(storage.store(content, ext, category));
+        return ApiResponse.success(storage.store(content, ext, category, familyId));
+    }
+
+    private boolean isPng(byte[] content) {
+        return content.length > 8
+                && (content[0] & 0xFF) == 0x89
+                && content[1] == 0x50
+                && content[2] == 0x4E
+                && content[3] == 0x47;
     }
 
     private BufferedImage resize(BufferedImage source, int maxSize, boolean keepAlpha) {

@@ -19,6 +19,21 @@ public class FileController {
         this.storage = storage;
     }
 
+    @GetMapping("/api/files/avatars/{name:.+}")
+    public ResponseEntity<Resource> avatar(@PathVariable String name) {
+        return respond(storage.findAvatar(name), name);
+    }
+
+    @GetMapping("/api/files/dishes/default/{name:.+}")
+    public ResponseEntity<Resource> defaultDish(@PathVariable String name) {
+        return respond(storage.findDefaultDish(name), name);
+    }
+
+    @GetMapping("/api/files/dishes/families/{familyId:[0-9]+}/{name:.+}")
+    public ResponseEntity<Resource> familyDish(@PathVariable String familyId, @PathVariable String name) {
+        return respond(storage.findFamilyDish(familyId, name), name);
+    }
+
     @GetMapping("/api/files/{month:[0-9]{6}}/{name:.+}")
     public ResponseEntity<Resource> download(@PathVariable String month, @PathVariable String name) {
         return respond(storage.find(month, name), name);

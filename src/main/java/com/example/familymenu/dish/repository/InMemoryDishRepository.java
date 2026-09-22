@@ -27,6 +27,7 @@ public class InMemoryDishRepository implements DishRepository {
     @Override
     public List<Dish> findAvailable(String category) {
         return dishes.values().stream()
+                .filter(dish -> dish.getFamilyId() == null)
                 .filter(Dish::isAvailable)
                 .filter(dish -> category == null || category.trim().isEmpty() || dish.getCategory().equals(category))
                 .sorted(Comparator.comparingInt(Dish::getSort).thenComparing(Dish::getId))
@@ -42,7 +43,7 @@ public class InMemoryDishRepository implements DishRepository {
     public Dish save(Dish dish) {
         Long id = dish.getId() == null ? idGenerator.incrementAndGet() : dish.getId();
         Dish saved = new Dish(id, dish.getName(), dish.getCategory(), dish.getDescription(), dish.getRecipe(),
-                dish.getImageUrl(), dish.isAvailable(), dish.getSort());
+                dish.getImageUrl(), dish.isAvailable(), dish.getSort(), dish.getFamilyId());
         dishes.put(id, saved);
         return saved;
     }
@@ -54,13 +55,34 @@ public class InMemoryDishRepository implements DishRepository {
 
     @Override
     public boolean existsByNameAndCategory(String name, String category, Long excludeId) {
-        return dishes.values().stream().anyMatch(dish -> !dish.getId().equals(excludeId)
+        return dishes.values().stream().anyMatch(dish -> dish.getFamilyId() == null && !dish.getId().equals(excludeId)
                 && dish.getName().equals(name) && dish.getCategory().equals(category));
+    }
+
+    @Override
+    public List<Dish> findAvailableByFamily(Long familyId) {
+        return dishes.values().stream()
+                .filter(dish -> familyId.equals(dish.getFamilyId()) && dish.isAvailable())
+                .sorted(Comparator.comparingInt(Dish::getSort).thenComparing(Dish::getId))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public int countByFamily(Long familyId) {
+        int count = 0;
+        for (Dish dish : dishes.values()) if (familyId.equals(dish.getFamilyId())) count++;
+        return count;
+    }
+
+    @Override
+    public boolean existsFamilyDish(Long familyId, String name, String category, Long excludeId) {
+        return dishes.values().stream().anyMatch(dish -> familyId.equals(dish.getFamilyId())
+                && !dish.getId().equals(excludeId) && dish.getName().equals(name) && dish.getCategory().equals(category));
     }
 
     @Override
     public long countByCategory(String category) { return dishes.values().stream().filter(d -> d.getCategory().equals(category)).count(); }
 
     @Override
-    public void renameCategory(String oldName, String newName) { dishes.replaceAll((id, d) -> d.getCategory().equals(oldName) ? new Dish(d.getId(), d.getName(), newName, d.getDescription(), d.getRecipe(), d.getImageUrl(), d.isAvailable(), d.getSort()) : d); }
+    public void renameCategory(String oldName, String newName) { dishes.replaceAll((id, d) -> d.getCategory().equals(oldName) ? new Dish(d.getId(), d.getName(), newName, d.getDescription(), d.getRecipe(), d.getImageUrl(), d.isAvailable(), d.getSort(), d.getFamilyId()) : d); }
 }

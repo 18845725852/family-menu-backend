@@ -9,6 +9,7 @@ import com.example.familymenu.order.dto.CreateOrderRequest;
 import com.example.familymenu.order.dto.OrderItemRequest;
 import com.example.familymenu.order.repository.OrderRepository;
 import com.example.familymenu.family.repository.FamilyRepository;
+import com.example.familymenu.menu.FamilyMenuService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final DishRepository dishRepository;
     private final FamilyRepository familyRepository;
+    private final FamilyMenuService familyMenuService;
 
     @Override
     public Order create(Long familyId, Long userId, CreateOrderRequest request) {
@@ -32,6 +34,7 @@ public class OrderServiceImpl implements OrderService {
             Dish dish = dishRepository.findById(itemRequest.getDishId())
                     .filter(Dish::isAvailable)
                     .orElseThrow(() -> new BusinessException("菜品不可用: " + itemRequest.getDishId()));
+            familyMenuService.requireOrderDish(familyId, dish);
             items.add(new OrderItem(dish.getId(), dish.getName(), itemRequest.getQuantity(), itemRequest.getRemark()));
         }
         Order order = new Order(null, familyId, userId, null, items, request.getRemark(),

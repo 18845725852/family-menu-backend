@@ -24,8 +24,8 @@ public class JdbcDishRepository implements DishRepository {
 
     @Override
     public List<Dish> findAvailable(String category) {
-        String sql = "SELECT id, name, category, description, recipe, image_url, available, sort "
-                + "FROM dishes WHERE available = TRUE";
+        String sql = "SELECT id, name, category, description, recipe, image_url, available, sort, family_id "
+                + "FROM dishes WHERE available = TRUE AND family_id IS NULL";
         if (category == null || category.trim().isEmpty()) {
             sql += " ORDER BY sort ASC, id ASC";
             return jdbcTemplate.query(sql, (rs, rowNum) -> map(rs));
@@ -37,9 +37,23 @@ public class JdbcDishRepository implements DishRepository {
     @Override
     public Optional<Dish> findById(Long id) {
         List<Dish> dishes = jdbcTemplate.query(
-                "SELECT id, name, category, description, recipe, image_url, available, sort FROM dishes WHERE id = ?",
+                "SELECT id, name, category, description, recipe, image_url, available, sort, family_id FROM dishes WHERE id = ?",
                 new Object[]{id}, (rs, rowNum) -> map(rs));
         return dishes.isEmpty() ? Optional.<Dish>empty() : Optional.of(dishes.get(0));
+    }
+
+    @Override
+    public List<Dish> findAvailableByFamily(Long familyId) {
+        return jdbcTemplate.query(
+                "SELECT id, name, category, description, recipe, image_url, available, sort, family_id "
+                        + "FROM dishes WHERE available = TRUE AND family_id = ? ORDER BY sort ASC, id ASC",
+                new Object[]{familyId}, (rs, rowNum) -> map(rs));
+    }
+
+    @Override
+    public int countByFamily(Long familyId) {
+        Integer count = jdbcTemplate.queryForObject("SELECT COUNT(1) FROM dishes WHERE family_id = ?", Integer.class, familyId);
+        return count == null ? 0 : count.intValue();
     }
 
     @Override
@@ -48,8 +62,8 @@ public class JdbcDishRepository implements DishRepository {
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {
                 PreparedStatement statement = connection.prepareStatement(
-                        "INSERT INTO dishes (name, category, description, recipe, image_url, available, sort) "
-                                + "VALUES (?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+                        "INSERT INTO dishes (name, category, description, recipe, image_url, available, sort, family_id) "
+                                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
                 statement.setString(1, dish.getName());
                 statement.setString(2, dish.getCategory());
                 statement.setString(3, dish.getDescription());
@@ -57,10 +71,12 @@ public class JdbcDishRepository implements DishRepository {
                 statement.setString(5, dish.getImageUrl());
                 statement.setBoolean(6, dish.isAvailable());
                 statement.setInt(7, dish.getSort());
+                if (dish.getFamilyId() == null) statement.setNull(8, java.sql.Types.BIGINT);
+                else statement.setLong(8, dish.getFamilyId());
                 return statement;
             }, keyHolder);
             return new Dish(keyHolder.getKey().longValue(), dish.getName(), dish.getCategory(),
-                    dish.getDescription(), dish.getRecipe(), dish.getImageUrl(), dish.isAvailable(), dish.getSort());
+                    dish.getDescription(), dish.getRecipe(), dish.getImageUrl(), dish.isAvailable(), dish.getSort(), dish.getFamilyId());
         }
         jdbcTemplate.update("UPDATE dishes SET name = ?, category = ?, description = ?, recipe = ?, image_url = ?, available = ?, sort = ? "
                         + "WHERE id = ?", dish.getName(), dish.getCategory(), dish.getDescription(), dish.getRecipe(), dish.getImageUrl(),
@@ -75,11 +91,22 @@ public class JdbcDishRepository implements DishRepository {
 
     @Override
     public boolean existsByNameAndCategory(String name, String category, Long excludeId) {
-        String sql = "SELECT COUNT(1) FROM dishes WHERE name = ? AND category = ?";
+        String sql = "SELECT COUNT(1) FROM dishes WHERE name = ? AND category = ? AND family_id IS NULL";
         if (excludeId == null) {
             return jdbcTemplate.queryForObject(sql, Integer.class, name, category) > 0;
         }
         return jdbcTemplate.queryForObject(sql + " AND id <> ?", Integer.class, name, category, excludeId) > 0;
+    }
+
+    @Override
+    public boolean existsFamilyDish(Long familyId, String name, String category, Long excludeId) {
+        String sql = "SELECT COUNT(1) FROM dishes WHERE family_id = ? AND name = ? AND category = ?";
+        if (excludeId == null) {
+            Integer count = jdbcTemplate.queryForObject(sql, Integer.class, familyId, name, category);
+            return count != null && count.intValue() > 0;
+        }
+        Integer count = jdbcTemplate.queryForObject(sql + " AND id <> ?", Integer.class, familyId, name, category, excludeId);
+        return count != null && count.intValue() > 0;
     }
 
     @Override
@@ -89,8 +116,10 @@ public class JdbcDishRepository implements DishRepository {
     public void renameCategory(String oldName, String newName) { jdbcTemplate.update("UPDATE dishes SET category = ? WHERE category = ?", newName, oldName); }
 
     private Dish map(java.sql.ResultSet rs) throws java.sql.SQLException {
+        long familyIdValue = rs.getLong("family_id");
+        Long familyId = rs.wasNull() ? null : Long.valueOf(familyIdValue);
         return new Dish(rs.getLong("id"), rs.getString("name"), rs.getString("category"), rs.getString("description"),
                 rs.getString("recipe"), rs.getString("image_url"), rs.getBoolean("available"),
-                rs.getInt("sort"));
+                rs.getInt("sort"), familyId);
     }
 }

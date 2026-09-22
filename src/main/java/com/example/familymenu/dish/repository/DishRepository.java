@@ -9,6 +9,10 @@ public interface DishRepository {
 
     List<Dish> findAvailable(String category);
 
+    List<Dish> findAvailableByFamily(Long familyId);
+
+    int countByFamily(Long familyId);
+
     Optional<Dish> findById(Long id);
 
     Dish save(Dish dish);
@@ -16,6 +20,8 @@ public interface DishRepository {
     boolean deleteById(Long id);
 
     boolean existsByNameAndCategory(String name, String category, Long excludeId);
+
+    boolean existsFamilyDish(Long familyId, String name, String category, Long excludeId);
 
     long countByCategory(String category);
 

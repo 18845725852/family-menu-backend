@@ -10,6 +10,7 @@ public class Dish {
     private final String imageUrl;
     private final boolean available;
     private final int sort;
+    private final Long familyId;
 
     public Dish(Long id, String name, String category,
                 String imageUrl, boolean available, int sort) {
@@ -21,6 +22,10 @@ public class Dish {
     }
     public Dish(Long id, String name, String category, String description, String recipe,
                 String imageUrl, boolean available, int sort) {
+        this(id, name, category, description, recipe, imageUrl, available, sort, null);
+    }
+    public Dish(Long id, String name, String category, String description, String recipe,
+                String imageUrl, boolean available, int sort, Long familyId) {
         this.id = id;
         this.name = name;
         this.category = category;
@@ -29,6 +34,7 @@ public class Dish {
         this.imageUrl = imageUrl;
         this.available = available;
         this.sort = sort;
+        this.familyId = familyId;
     }
 
     public Long getId() { return id; }
@@ -39,4 +45,5 @@ public class Dish {
     public String getImageUrl() { return imageUrl; }
     public boolean isAvailable() { return available; }
     public int getSort() { return sort; }
+    public Long getFamilyId() { return familyId; }
 }
