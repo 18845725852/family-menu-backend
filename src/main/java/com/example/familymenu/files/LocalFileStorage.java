@@ -6,10 +6,13 @@ import java.nio.file.Path;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class LocalFileStorage {
+    private static final Logger log = LoggerFactory.getLogger(LocalFileStorage.class);
     private static final DateTimeFormatter MONTH = DateTimeFormatter.ofPattern("yyyyMM");
     private final Path root;
 
@@ -17,6 +20,7 @@ public class LocalFileStorage {
         this.root = properties.root();
         Files.createDirectories(root);
         Files.createDirectories(properties.legacyDir());
+        log.info("file storage directory: {}", root);
     }
 
     public Path root() {
