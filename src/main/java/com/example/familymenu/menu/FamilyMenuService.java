@@ -80,6 +80,26 @@ public class FamilyMenuService {
         if (!dishRepository.deleteById(dishId)) throw new BusinessException("菜品不存在");
     }
 
+    public BatchDeleteResult deleteBatch(Long familyId, Long userId, java.util.List<Long> ids) {
+        requireCustomMenu(familyId, userId);
+        if (ids == null || ids.isEmpty()) throw new BusinessException("请选择要删除的菜品");
+        int deleted = 0;
+        java.util.List<String> blocked = new java.util.ArrayList<String>();
+        for (Long dishId : ids) {
+            if (dishId == null) continue;
+            java.util.Optional<Dish> found = dishRepository.findById(dishId);
+            if (!found.isPresent() || !familyId.equals(found.get().getFamilyId())) continue;
+            Dish dish = found.get();
+            if (orderRepository.countItemsByDishId(dishId) > 0) {
+                blocked.add(dish.getName());
+                continue;
+            }
+            if (dishRepository.deleteById(dishId)) deleted++;
+        }
+        if (deleted == 0 && blocked.isEmpty()) throw new BusinessException("没有可删除的菜品");
+        return new BatchDeleteResult(deleted, blocked);
+    }
+
     public void requireOrderDish(Long familyId, Dish dish) {
         boolean custom = menuRepository.isCustomMenu(familyId);
         if (custom) {

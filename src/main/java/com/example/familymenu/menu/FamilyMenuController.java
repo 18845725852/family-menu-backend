@@ -52,4 +52,10 @@ public class FamilyMenuController {
         service.delete(familyId, CurrentUser.requireId(), dishId);
         return ApiResponse.success(null);
     }
+
+    @PostMapping("/dishes/batch-delete")
+    public ApiResponse<BatchDeleteResult> batchDelete(@PathVariable Long familyId,
+                                                      @RequestBody BatchDeleteRequest request) {
+        return ApiResponse.success(service.deleteBatch(familyId, CurrentUser.requireId(), request.getIds()));
+    }
 }
