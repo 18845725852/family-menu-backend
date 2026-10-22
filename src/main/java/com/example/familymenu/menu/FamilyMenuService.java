@@ -35,16 +35,11 @@ public class FamilyMenuService {
         return response(familyId);
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public FamilyMenuResponse setCustomMenu(Long familyId, Long userId, Boolean customMenu) {
         requireMember(familyId, userId);
         if (customMenu == null) throw new BusinessException("请选择是否使用自定义菜谱");
-        if (customMenu.booleanValue() && dishRepository.countByFamily(familyId) == 0) {
-            List<Dish> defaults = dishRepository.findAvailable(null);
-            for (Dish dish : defaults) {
-                dishRepository.save(new Dish(null, dish.getName(), dish.getCategory(), dish.getDescription(), dish.getRecipe(),
-                        dish.getImageUrl(), true, dish.getSort(), familyId));
-            }
-        }
+        if (customMenu.booleanValue()) dishRepository.initializeFamilyMenu(familyId);
         menuRepository.setCustomMenu(familyId, customMenu.booleanValue());
         return response(familyId);
     }

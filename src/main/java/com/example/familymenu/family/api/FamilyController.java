@@ -6,7 +6,8 @@ import com.example.familymenu.auth.api.LoginRequired; import com.example.familym
  @GetMapping("/{id}") public ApiResponse<Family> get(@PathVariable Long id){return ApiResponse.success(service.get(id));}
  @GetMapping public ApiResponse<List<Family>> mine(){return ApiResponse.success(service.mineByUserId(CurrentUser.requireId()));}
  @GetMapping("/{id}/members") public ApiResponse<List<FamilyMember>> members(@PathVariable Long id){return ApiResponse.success(service.members(id));}
- @PatchMapping("/{id}/members/{memberId}/role") public ApiResponse<FamilyMember> role(@PathVariable Long id,@PathVariable Long memberId,@Valid @RequestBody UpdateMemberRoleRequest r){return ApiResponse.success(service.updateMemberRole(id,memberId,r.getRole()));}
- @DeleteMapping("/{id}/members/{memberId}") public ApiResponse<Void> remove(@PathVariable Long id,@PathVariable Long memberId){service.removeMember(id,memberId);return ApiResponse.success(null);}
- @DeleteMapping("/{id}") public ApiResponse<Void> delete(@PathVariable Long id){service.delete(id);return ApiResponse.success(null);}
+ @PutMapping("/{id}") public ApiResponse<Family> update(@PathVariable Long id,@Valid @RequestBody UpdateFamilyRequest r){return ApiResponse.success(service.rename(id,r.getName(),CurrentUser.requireId()));}
+ @PatchMapping("/{id}/members/{memberId}/role") public ApiResponse<FamilyMember> role(@PathVariable Long id,@PathVariable Long memberId,@Valid @RequestBody UpdateMemberRoleRequest r){return ApiResponse.success(service.updateMemberRole(id,memberId,r.getRole(),CurrentUser.requireId()));}
+ @DeleteMapping("/{id}/members/{memberId}") public ApiResponse<Void> remove(@PathVariable Long id,@PathVariable Long memberId){service.removeMember(id,memberId,CurrentUser.requireId());return ApiResponse.success(null);}
+ @DeleteMapping("/{id}") public ApiResponse<Void> delete(@PathVariable Long id){service.delete(id,CurrentUser.requireId());return ApiResponse.success(null);}
 }

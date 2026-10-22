@@ -53,6 +53,10 @@ public class InMemoryDishRepository implements DishRepository {
         return dishes.remove(id) != null;
     }
 
+    public void deleteByFamilyId(Long familyId) {
+        dishes.values().removeIf(dish -> familyId.equals(dish.getFamilyId()));
+    }
+
     @Override
     public boolean existsByNameAndCategory(String name, String category, Long excludeId) {
         return dishes.values().stream().anyMatch(dish -> dish.getFamilyId() == null && !dish.getId().equals(excludeId)
@@ -72,6 +76,15 @@ public class InMemoryDishRepository implements DishRepository {
         int count = 0;
         for (Dish dish : dishes.values()) if (familyId.equals(dish.getFamilyId())) count++;
         return count;
+    }
+
+    @Override
+    public synchronized void initializeFamilyMenu(Long familyId) {
+        if (countByFamily(familyId) > 0) return;
+        for (Dish dish : findAvailable(null)) {
+            save(new Dish(null, dish.getName(), dish.getCategory(), dish.getDescription(), dish.getRecipe(),
+                    dish.getImageUrl(), true, dish.getSort(), familyId));
+        }
     }
 
     @Override

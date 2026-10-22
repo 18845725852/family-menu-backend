@@ -49,11 +49,12 @@ public class MemoryFamilyInvitationController {
     public ApiResponse<Family> join(@Valid @RequestBody JoinFamilyRequest request) {
         Long familyId = codes.get(request.getInviteCode().trim().toUpperCase());
         if (familyId == null) throw new BusinessException("邀请码无效或已过期");
+        Family family = familyRepository.findById(familyId).orElseThrow(() -> new BusinessException("邀请码无效或家庭组已删除"));
         Long userId = CurrentUser.requireId();
         if (!familyRepository.isMember(familyId, userId)) {
             familyRepository.addMemberUserId(familyId, userId,
                     com.example.familymenu.auth.api.DefaultNicknameGenerator.generate(), "MEMBER");
         }
-        return ApiResponse.success(familyRepository.findById(familyId).orElseThrow(() -> new BusinessException("家庭不存在")));
+        return ApiResponse.success(family);
     }
 }

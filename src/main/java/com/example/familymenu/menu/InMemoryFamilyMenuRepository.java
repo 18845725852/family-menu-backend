@@ -19,4 +19,8 @@ public class InMemoryFamilyMenuRepository implements FamilyMenuRepository {
     public void setCustomMenu(Long familyId, boolean customMenu) {
         flags.put(familyId, customMenu);
     }
+
+    public void deleteByFamilyId(Long familyId) {
+        flags.remove(familyId);
+    }
 }

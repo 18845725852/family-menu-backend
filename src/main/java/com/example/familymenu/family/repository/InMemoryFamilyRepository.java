@@ -2,6 +2,11 @@ package com.example.familymenu.family.repository;
 
 import com.example.familymenu.family.domain.Family;
 import com.example.familymenu.family.domain.FamilyMember;
+import com.example.familymenu.dish.repository.InMemoryDishRepository;
+import com.example.familymenu.order.repository.InMemoryOrderRepository;
+import com.example.familymenu.menu.InMemoryFamilyMenuRepository;
+import com.example.familymenu.restaurant.repository.InMemoryFamilyWheelRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
@@ -15,7 +20,12 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @Repository
 @Profile("memory")
+@RequiredArgsConstructor
 public class InMemoryFamilyRepository implements FamilyRepository {
+    private final InMemoryDishRepository dishRepository;
+    private final InMemoryOrderRepository orderRepository;
+    private final InMemoryFamilyMenuRepository menuRepository;
+    private final InMemoryFamilyWheelRepository wheelRepository;
     private final AtomicLong ids = new AtomicLong();
     private final Map<Long, Family> families = new HashMap<Long, Family>();
     private final Map<Long, List<FamilyMember>> members = new HashMap<Long, List<FamilyMember>>();
@@ -70,5 +80,20 @@ public class InMemoryFamilyRepository implements FamilyRepository {
         List<FamilyMember> list = members.get(id); if (list == null) return false;
         return list.removeIf(member -> member.getId().equals(memberId) && !"OWNER".equals(member.getRole()));
     }
-    public synchronized boolean deleteFamily(Long id) { return families.remove(id) != null && members.remove(id) != null; }
+    public synchronized boolean renameFamily(Long id, String name) {
+        Family family = families.get(id);
+        if (family == null) return false;
+        families.put(id, new Family(id, name, family.getOwnerUserId()));
+        return true;
+    }
+    public synchronized boolean deleteFamily(Long id) {
+        if (!families.containsKey(id)) return false;
+        orderRepository.deleteByFamilyId(id);
+        dishRepository.deleteByFamilyId(id);
+        menuRepository.deleteByFamilyId(id);
+        wheelRepository.deleteByFamilyId(id);
+        members.remove(id);
+        families.remove(id);
+        return true;
+    }
 }

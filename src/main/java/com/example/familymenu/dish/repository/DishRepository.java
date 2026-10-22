@@ -13,6 +13,8 @@ public interface DishRepository {
 
     int countByFamily(Long familyId);
 
+    void initializeFamilyMenu(Long familyId);
+
     Optional<Dish> findById(Long id);
 
     Dish save(Dish dish);

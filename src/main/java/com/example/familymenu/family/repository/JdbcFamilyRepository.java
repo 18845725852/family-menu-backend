@@ -12,5 +12,18 @@ import com.example.familymenu.family.domain.*; import org.springframework.contex
  public FamilyMember addMember(Long fid,String nick,String role){List<Long> ids=jdbc.query("SELECT id FROM users WHERE nickname=? ORDER BY id LIMIT 1",new Object[]{nick},(r,n)->r.getLong(1)); Long uid;if(ids.isEmpty()){jdbc.update("INSERT INTO users(nickname) VALUES(?)",nick);uid=jdbc.queryForObject("SELECT LAST_INSERT_ID()",Long.class);} else {uid=ids.get(0);} return addMemberUserId(fid,uid,nick,role);}
  public boolean updateMemberRole(Long fid,Long mid,String role){return jdbc.update("UPDATE family_members SET role=? WHERE id=? AND family_id=? AND role <> 'OWNER'",role,mid,fid)>0;}
  public boolean removeMember(Long fid,Long mid){return jdbc.update("DELETE FROM family_members WHERE id=? AND family_id=? AND role <> 'OWNER'",mid,fid)>0;}
- public boolean deleteFamily(Long fid){return jdbc.update("DELETE FROM families WHERE id=?",fid)>0;}
+ public boolean renameFamily(Long fid,String name){return jdbc.update("UPDATE families SET name=? WHERE id=?",name,fid)>0;}
+ @org.springframework.transaction.annotation.Transactional
+ public boolean deleteFamily(Long fid){
+  List<Long> locked=jdbc.query("SELECT id FROM families WHERE id=? FOR UPDATE",new Object[]{fid},(r,n)->r.getLong(1));
+  if(locked.isEmpty())return false;
+  jdbc.update("DELETE oi FROM order_items oi JOIN orders o ON o.id=oi.order_id WHERE o.family_id=?",fid);
+  jdbc.update("DELETE FROM orders WHERE family_id=?",fid);
+  jdbc.update("DELETE FROM dishes WHERE family_id=?",fid);
+  jdbc.update("DELETE FROM family_invitations WHERE family_id=?",fid);
+  jdbc.update("DELETE FROM family_wheel_spins WHERE family_id=?",fid);
+  jdbc.update("DELETE FROM family_wheel_restaurants WHERE family_id=?",fid);
+  jdbc.update("DELETE FROM family_members WHERE family_id=?",fid);
+  return jdbc.update("DELETE FROM families WHERE id=?",fid)>0;
+ }
 }

@@ -28,6 +28,11 @@ public class InMemoryFamilyWheelRepository implements FamilyWheelRepository {
         options.remove(familyId);
     }
 
+    public synchronized void deleteByFamilyId(Long familyId) {
+        options.remove(familyId);
+        spins.remove(familyId);
+    }
+
     public synchronized UserWheelRestaurant insertOption(Long familyId, String name, int sort) {
         UserWheelRestaurant saved = new UserWheelRestaurant(optionIds.incrementAndGet(), name, sort);
         List<UserWheelRestaurant> list = options.get(familyId);

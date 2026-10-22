@@ -40,6 +40,10 @@ public class InMemoryOrderRepository implements OrderRepository {
         return orders.remove(id) != null;
     }
 
+    public void deleteByFamilyId(Long familyId) {
+        orders.values().removeIf(order -> familyId.equals(order.getFamilyId()));
+    }
+
     @Override
     public long countItemsByDishId(Long dishId) {
         return orders.values().stream().flatMap(order -> order.getItems().stream())

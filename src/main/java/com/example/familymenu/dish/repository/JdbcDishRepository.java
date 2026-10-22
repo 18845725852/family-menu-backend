@@ -57,6 +57,20 @@ public class JdbcDishRepository implements DishRepository {
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
+    public void initializeFamilyMenu(Long familyId) {
+        List<Long> locked = jdbcTemplate.query("SELECT id FROM families WHERE id = ? FOR UPDATE",
+                new Object[]{familyId}, (rs, rowNum) -> rs.getLong(1));
+        if (locked.isEmpty()) return;
+        List<Long> existing = jdbcTemplate.query("SELECT id FROM dishes WHERE family_id = ? LIMIT 1 FOR UPDATE",
+                new Object[]{familyId}, (rs, rowNum) -> rs.getLong(1));
+        if (!existing.isEmpty()) return;
+        jdbcTemplate.update("INSERT INTO dishes (name, category, description, recipe, image_url, available, sort, family_id) "
+                + "SELECT name, category, description, recipe, image_url, available, sort, ? "
+                + "FROM dishes WHERE available = TRUE AND family_id IS NULL ORDER BY sort ASC, id ASC", familyId);
+    }
+
+    @Override
     public Dish save(Dish dish) {
         if (dish.getId() == null) {
             KeyHolder keyHolder = new GeneratedKeyHolder();
