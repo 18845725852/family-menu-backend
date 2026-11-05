@@ -4,3 +4,6 @@ target/
 .DS_Store
 *.log
 uploads/
+
+# Local credentials (external Spring Boot configuration)
+/config/application.yml

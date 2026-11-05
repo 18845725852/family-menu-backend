@@ -1,172 +1,75 @@
-# 家庭点菜小程序后端
+# 家庭菜单后端
 
-这是一个独立的 Spring Boot 单体后端，面向家庭版微信点菜小程序的第一版核心流程：
+为微信小程序提供登录、家庭管理、共享菜谱、点菜订单、餐厅抽卡和图片存储服务。页面说明见[前端仓库](https://github.com/18845725852/family-menu-frontend)。前后端独立获取，无需放在同级目录。
 
-> 查看可供应菜品 -> 家人提交订单 -> 查看历史订单
+## 功能概览
 
-## 技术栈
+| 模块 | 功能 |
+| --- | --- |
+| 账号与家庭 | 微信登录、个人资料、创建家庭、邀请码加入、成员管理及多家庭切换 |
+| 菜谱 | 默认及家庭自定义菜谱、图片和做法、单个及批量删除 |
+| 订单 | 提交家庭订单、查询记录和详情、删除订单 |
+| 抽卡 | 默认及家庭候选餐厅、保存和查询抽卡记录 |
+| 图片 | 上传压缩、分类存储及图片访问 |
 
-- Java 8
-- Spring Boot 2.7.18
-- Maven
-- Spring MVC + Bean Validation
-- MySQL + Spring JDBC（默认）
+菜谱、候选餐厅和订单在家庭内共享。被历史订单引用的菜品不能删除。删除家庭会清理其订单、自定义菜品、邀请码和抽卡数据。订单用于记录选菜，当前不含支付和制作状态流转。
 
-## 启动
+## 本地启动
 
-在本目录执行：
+环境：Java 8、Maven、MySQL；后端使用 Spring Boot 2.7.18 和 Spring JDBC。以下 PowerShell 命令在本仓库根目录执行，默认端口为 8081。
 
-```bash
-mvn spring-boot:run
+### 开发内存模式
+
+```powershell
+mvn spring-boot:run "-Dspring-boot.run.profiles=memory"
 ```
 
-项目已按 Java 8 编译验证通过。
+无需 MySQL，使用固定开发用户。业务数据重启后清空，图片仍写入磁盘；仅用于开发，不能验证真实微信登录和多账号隔离。
 
-## MySQL 配置
+### MySQL 模式
 
-默认连接 `127.0.0.1:3306/family_menu`，用户名默认是 `root`，密码通过环境变量传入。首次使用先创建数据库：
+先创建数据库，并为数据库账号授予相应权限：
 
 ```sql
 CREATE DATABASE family_menu DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
-再按本机账号启动：
+配置环境变量并启动：
 
-```bash
-export MYSQL_USERNAME=root
-export MYSQL_PASSWORD='你的MySQL密码'
+```powershell
+$env:MYSQL_USERNAME = 'family_menu'
+$env:MYSQL_PASSWORD = '<数据库密码>'
+$env:WECHAT_APPID = '<微信小程序 AppID>'
+$env:WECHAT_SECRET = '<微信小程序密钥>'
 mvn spring-boot:run
 ```
 
-应用启动时会自动执行 `schema.sql` 建表，并通过 `data.sql` 补充两道初始菜。也可以完整覆盖 JDBC 地址：
+| 环境变量 | 用途 |
+| --- | --- |
+| `MYSQL_URL` | JDBC 地址，默认连接 `127.0.0.1:3306/family_menu` |
+| `MYSQL_USERNAME` / `MYSQL_PASSWORD` | 数据库账号及密码 |
+| `WECHAT_APPID` / `WECHAT_SECRET` | 与前端对应的小程序 AppID 及密钥 |
+| `FILE_STORAGE_DIR` | 图片根目录，默认为当前用户家目录下的 `.family-menu/files` |
 
-```bash
-export MYSQL_URL='jdbc:mysql://127.0.0.1:3306/family_menu?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true'
+敏感配置通过环境变量提供；本地也可使用已忽略的 `config/application.yml`。从本仓库根目录启动时会读取该外部配置；部署时通过环境变量或部署目录下的外部配置提供凭据。
+
+## 数据与部署
+
+- 启动会执行 `schema.sql` 和 `data.sql`，当前只初始化默认餐厅；新库需另行准备默认分类和菜品。
+- 升级前备份数据库和图片目录；发布 JAR 时保留图片目录。
+- **`reset-and-seed-menu.sql` 会清空订单、菜品和分类，不能用于保留生产数据的升级。**
+- 正式部署需使用真实微信登录配置、HTTPS 和持久化数据库，并核对接口权限。详细配置及迁移说明见[部署与维护](docs/DEPLOYMENT.md)。
+
+## 测试与打包
+
+```powershell
+mvn test
+mvn package
 ```
 
-如果 `orders` 表是在移除订单状态之前创建的，请在 `family_menu` 库中一次性执行 `migration-no-order-status.sql`，删除旧的 `status` 字段后再启动应用。
+现有测试覆盖家庭管理和菜谱初始化，使用内存仓库；真实数据库及微信登录需另行联调。
 
-如果暂时没有可用 MySQL，可使用内存模式回归接口（数据重启后清空）：
+## 详细文档
 
-```bash
-mvn spring-boot:run -Dspring-boot.run.profiles=memory
-```
-
-如果需要按家庭菜单清单重新初始化菜品和类型，请手动执行 `src/main/resources/reset-and-seed-menu.sql`。该脚本会清空现有订单、菜品和菜品类型，请确认后再执行；应用启动不会自动执行该脚本。
-
-## 接口
-
-启动后访问 `http://localhost:8081/` 可打开临时测试台，用于查看菜单、加入点菜篮、提交订单和查看历史订单。若服务在页面加入前已经启动，需要重启服务才能加载该页面。
-
-### 查询可用菜品
-
-```http
-GET /api/dishes?category=家常菜
-```
-
-### 新增菜品（暂未做管理员鉴权）
-
-```http
-POST /api/dishes
-Content-Type: application/json
-
-{
-  "name": "清炒西兰花",
-  "category": "素菜",
-  "sort": 3
-}
-```
-
-### 编辑菜品（暂未做管理员鉴权）
-
-```http
-PUT /api/dishes/1
-Content-Type: application/json
-
-{
-  "name": "番茄炒蛋（家常）",
-  "category": "家常菜",
-  "sort": 1
-}
-```
-
-### 上下架菜品
-
-```http
-PATCH /api/dishes/1/availability
-Content-Type: application/json
-
-{"available": false}
-```
-
-### 删除菜品
-
-```http
-DELETE /api/dishes/1
-```
-
-### 提交点菜订单
-
-```http
-POST /api/families/{familyId}/orders
-Content-Type: application/json
-
-{
-  "items": [
-    {"dishId": 1, "quantity": 1, "remark": "少油"},
-    {"dishId": 2, "quantity": 1}
-  ],
-  "remark": "六点开饭"
-}
-```
-
-### 查询订单
-
-```http
-GET /api/families/{familyId}/orders
-```
-
-### 查询订单详情
-
-```http
-GET /api/families/{familyId}/orders/1
-```
-
-### 删除订单
-
-```http
-DELETE /api/families/{familyId}/orders/1
-```
-
-
-## 菜品图片
-
-图片不放进部署包。上传后写到服务器本机目录，默认是 `~/.family-menu/files`，下载仍走现在的后端域名。
-
-```bash
-export FILE_STORAGE_DIR=/var/lib/family-menu/files
-```
-
-不设置时使用当前用户家目录下的 `.family-menu/files`。这个目录要放在项目外面，重新发布 jar 时不要删它。
-
-新图片接口：
-
-```http
-POST /api/uploads/image
-Content-Type: multipart/form-data
-
-file: 图片文件
-```
-
-默认菜品图统一放在 `dishes/default/`，家庭自定义菜品图放在 `dishes/families/{家庭ID}/`，头像统一放在 `avatars/`。不再按月份分目录。家庭默认使用系统菜谱；开启自定义后，只修改当前家庭的菜，分类仍使用系统里已有的菜品类型。
-
-```http
-GET /api/files/dishes/default/{文件名}
-```
-
-已经迁走的旧图放在文件目录的 `legacy/` 下，原来的 `/uploads/菜名.png` 继续从这里读取。启动时不会再从项目目录复制图片。
-
-## 下一步接入微信
-
-1. 完善微信登录、家庭成员权限和会话管理。
-2. 增加家庭空间和成员表，再给“新增菜品”接口加管理员权限。
+- [接口与业务规则](docs/API.md)
+- [部署与维护](docs/DEPLOYMENT.md)
