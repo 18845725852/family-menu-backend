@@ -9,9 +9,8 @@ spring:
     default-property-inclusion: non_null
   datasource:
     url: ${MYSQL_URL:jdbc:mysql://127.0.0.1:3306/family_menu?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
-    username: ${MYSQL_USERNAME:family_menu}
+    username: ${MYSQL_USERNAME:}
     password: ${MYSQL_PASSWORD:}
-#    username: ${MYSQL_USERNAME:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
   sql:
     init:
@@ -21,7 +20,7 @@ server:
   port: 8081
 
 wechat:
-  appid: ${WECHAT_APPID:wxbc338b2070fea762}
+  appid: ${WECHAT_APPID:}
   secret: ${WECHAT_SECRET:}
 
 files:

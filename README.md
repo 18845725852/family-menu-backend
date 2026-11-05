@@ -37,7 +37,7 @@ CREATE DATABASE family_menu DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicod
 配置环境变量并启动：
 
 ```powershell
-$env:MYSQL_USERNAME = 'family_menu'
+$env:MYSQL_USERNAME = '<数据库账号>'
 $env:MYSQL_PASSWORD = '<数据库密码>'
 $env:WECHAT_APPID = '<微信小程序 AppID>'
 $env:WECHAT_SECRET = '<微信小程序密钥>'
@@ -51,7 +51,7 @@ mvn spring-boot:run
 | `WECHAT_APPID` / `WECHAT_SECRET` | 与前端对应的小程序 AppID 及密钥 |
 | `FILE_STORAGE_DIR` | 图片根目录，默认为当前用户家目录下的 `.family-menu/files` |
 
-敏感配置通过环境变量提供；本地也可使用已忽略的 `config/application.yml`。从本仓库根目录启动时会读取该外部配置；部署时通过环境变量或部署目录下的外部配置提供凭据。
+数据库账号、密码及微信 AppID、密钥均无实际默认值，需通过环境变量提供；本地也可使用已忽略的 `config/application.yml`。从本仓库根目录启动时会读取该外部配置；部署时通过环境变量或部署目录下的外部配置提供配置值。
 
 ## 数据与部署
 
