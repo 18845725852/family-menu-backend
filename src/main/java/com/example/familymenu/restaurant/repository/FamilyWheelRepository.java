@@ -16,4 +16,6 @@ public interface FamilyWheelRepository {
                                String restaurantName, LocalDateTime createdAt);
 
     List<FamilyWheelSpin> findSpins(Long familyId, int limit);
+
+    boolean deleteSpin(Long familyId, Long id);
 }

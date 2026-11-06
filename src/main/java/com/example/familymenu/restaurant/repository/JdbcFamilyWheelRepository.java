@@ -65,6 +65,10 @@ public class JdbcFamilyWheelRepository implements FamilyWheelRepository {
         return new FamilyWheelSpin(keys.getKey().longValue(), userId, nickname, avatarUrl, restaurantName, createdAt);
     }
 
+    public boolean deleteSpin(Long familyId, Long id) {
+        return jdbc.update("DELETE FROM family_wheel_spins WHERE family_id=? AND id=?", familyId, id) > 0;
+    }
+
     public List<FamilyWheelSpin> findSpins(Long familyId, int limit) {
         String sql = "SELECT s.id, s.user_id, s.nickname, s.avatar_url, u.nickname AS user_nickname, u.avatar_url AS user_avatar, "
                 + "s.restaurant_name, s.created_at "

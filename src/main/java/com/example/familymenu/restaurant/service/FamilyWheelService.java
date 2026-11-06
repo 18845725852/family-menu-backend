@@ -12,4 +12,6 @@ public interface FamilyWheelService {
     FamilyWheelResponse replace(Long familyId, Long userId, List<String> names);
 
     FamilyWheelSpin spin(Long familyId, Long userId, String name);
+
+    FamilyWheelResponse deleteSpin(Long familyId, Long userId, Long id);
 }

@@ -56,6 +56,11 @@ public class InMemoryFamilyWheelRepository implements FamilyWheelRepository {
         return saved;
     }
 
+    public synchronized boolean deleteSpin(Long familyId, Long id) {
+        List<FamilyWheelSpin> list = spins.get(familyId);
+        return list != null && list.removeIf(spin -> spin.getId().equals(id));
+    }
+
     public synchronized List<FamilyWheelSpin> findSpins(Long familyId, int limit) {
         List<FamilyWheelSpin> list = spins.getOrDefault(familyId, Collections.<FamilyWheelSpin>emptyList());
         List<FamilyWheelSpin> result = new ArrayList<FamilyWheelSpin>();

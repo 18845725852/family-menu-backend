@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -50,6 +51,11 @@ public class FamilyWheelController {
     @GetMapping("/spins")
     public ApiResponse<List<FamilyWheelSpin>> spins(@PathVariable Long familyId) {
         return ApiResponse.success(service.listSpins(familyId, CurrentUser.requireId()));
+    }
+
+    @DeleteMapping("/spins/{id}")
+    public ApiResponse<FamilyWheelResponse> deleteSpin(@PathVariable Long familyId, @PathVariable Long id) {
+        return ApiResponse.success(service.deleteSpin(familyId, CurrentUser.requireId(), id));
     }
 
     @PostMapping("/spins")

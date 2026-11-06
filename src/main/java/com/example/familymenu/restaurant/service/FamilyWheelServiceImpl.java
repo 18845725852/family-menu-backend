@@ -78,6 +78,15 @@ public class FamilyWheelServiceImpl implements FamilyWheelService {
         return repository.insertSpin(familyId, userId, nickname, avatarUrl, cleaned, LocalDateTime.now());
     }
 
+    @Transactional
+    public FamilyWheelResponse deleteSpin(Long familyId, Long userId, Long id) {
+        requireMember(familyId, userId);
+        if (!repository.deleteSpin(familyId, id)) {
+            throw new BusinessException("抽卡记录不存在或已删除");
+        }
+        return view(familyId);
+    }
+
     private FamilyWheelResponse view(Long familyId) {
         List<UserWheelRestaurant> custom = repository.findOptions(familyId);
         boolean customized = !custom.isEmpty();
